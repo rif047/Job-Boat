@@ -25,39 +25,20 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [agents, setAgents] = useState([]);
-    const [positions, setPositions] = useState([]);
-    const [cities, setCities] = useState([]);
 
-    const capitalizeWords = (str) => {
-        return str
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ');
-    };
+    const capitalizeWords = (str) => { return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '); };
 
 
     useEffect(() => {
         if (data) {
-            setFormData({
-                ...data,
-                agent: data.agent?.name || "",
-                position: Array.isArray(data.position) ? data.position.map(p => p.name || p) : [],
-                city: Array.isArray(data.city) ? data.city.map(c => c.name || c) : []
-            });
+            setFormData({ ...data });
         } else {
-            setFormData({
-                agent: "",
-                position: [],
-                city: []
-            });
+            setFormData({});
         }
 
         setErrors({});
 
-        axios.get(`${import.meta.env.VITE_SERVER_URL}/api/agents`).then(response => setAgents(response.data)).catch(() => toast.error('Failed to fetch agents.'));
-        axios.get(`${import.meta.env.VITE_SERVER_URL}/api/positions`).then(response => setPositions(response.data)).catch(() => toast.error('Failed to fetch skills.'));
-        axios.get(`${import.meta.env.VITE_SERVER_URL}/api/cities`).then(response => setCities(response.data)).catch(() => toast.error('Failed to fetch cities.'));
-
+        axios.get(`${import.meta.env.VITE_SERVER_URL}/api/agents`).then((res) => setAgents(res.data)).catch(() => toast.error("Failed to fetch agents."));
     }, [data]);
 
     const validate = () => {
@@ -72,7 +53,7 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
         if (!experience) newErrors.experience = 'Experience is required.';
         if (!right_to_work) newErrors.right_to_work = 'Right to work is required.';
         if (!city || city.length === 0) newErrors.city = 'Preferred Cities are required.';
-        if (!position || position.length === 0) newErrors.position = 'Skills are required.';
+        if (!position || position.length === 0) newErrors.position = 'Position are required.';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -123,7 +104,9 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
                     { name: 'phone', label: 'Phone*' },
                     { name: 'alt_phone', label: 'Alternative Phone' },
                     { name: 'address', label: 'Address*' },
-                    { name: 'note', label: 'Note' },
+                    { name: 'city', label: 'City*' },
+                    { name: 'preferred_location', label: 'Preferred Location*' },
+                    { name: 'position', label: 'Position*' },
                 ].map(({ name, label }) => (
                     <TextField
                         key={name}
@@ -141,44 +124,6 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
                 ))}
 
 
-                <Autocomplete
-                    multiple
-                    fullWidth
-                    size="small"
-                    margin="normal"
-                    options={cities}
-                    getOptionLabel={(option) => capitalizeWords(option.name)}
-                    value={cities.filter(c => formData.city?.includes(c.name))}
-                    onChange={(event, newValue) => {
-                        handleChange({
-                            target: { name: "city", value: newValue.map(v => v.name) }
-                        });
-                    }}
-                    renderInput={(params) => (
-                        <TextField {...params} label="Select Preferred Cities*" error={!!errors.city} helperText={errors.city} />
-                    )}
-                    sx={{ my: 2 }}
-                />
-
-                <Autocomplete
-                    multiple
-                    fullWidth
-                    size="small"
-                    margin="normal"
-                    options={positions}
-                    getOptionLabel={(option) => capitalizeWords(option.name)}
-                    value={positions.filter(p => formData.position?.includes(p.name))}
-                    onChange={(event, newValue) => {
-                        handleChange({
-                            target: { name: "position", value: newValue.map(v => v.name) }
-                        });
-                    }}
-                    renderInput={(params) => (
-                        <TextField {...params} label="Select Skills*" error={!!errors.position} helperText={errors.position} />
-                    )}
-                />
-
-
                 <TextField
                     select
                     label="Experience*"
@@ -192,9 +137,7 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
                     helperText={errors.experience}
                 >
                     {[
-                        'No Experience', '1 - 6 Months', '7 - 12 Months',
-                        '1 Year', '2 Years', '3 Years', '4 Years', '5 Years',
-                        '6 Years', '7 Years', '8 Years', '9 Years', '10 Years', '10+ Years'
+                        "No Experience", "1 - 6 Months", "7 - 12 Months", "1 Year", "2 - 3 Years", "4 - 5 Years", "6 - 7 Years", "8 - 9 Years", "10+ Years",
                     ].map(exp => <MenuItem key={exp} value={exp}>{exp}</MenuItem>)}
                 </TextField>
 
@@ -251,6 +194,22 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
                         <TextField {...params} label="Select Agent*" error={!!errors.agent} helperText={errors.agent} />
                     )}
                     sx={{ my: 2 }}
+                />
+
+
+                <TextField
+                    fullWidth
+                    label="Remark"
+                    name="remark"
+                    size="small"
+                    margin="normal"
+                    multiline
+                    minRows={4}
+                    value={formData.remark || ""}
+                    onChange={handleChange}
+                    error={!!errors.remark}
+                    helperText={errors.remark}
+                    sx={{ mb: 2 }}
                 />
 
 

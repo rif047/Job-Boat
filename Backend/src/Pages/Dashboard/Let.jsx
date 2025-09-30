@@ -7,18 +7,18 @@ export default function Let() {
     const [pending, setPending] = useState([]);
 
     useEffect(() => {
-        const fetchProperties = async () => {
+        const fetchJobs = async () => {
             try {
-                const { data } = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/properties`);
-                const letProperties = data.filter(p => p.status === "Let");
-                setTotal(letProperties.length);
+                const { data } = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/jobs`);
+                const letJobs = data.filter(p => p.status === "Let");
+                setTotal(letJobs.length);
 
-                const recentPending = letProperties
+                const recentPending = letJobs
                     .sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn))
                     .slice(0, 3)
                     .map(p => ({
                         ...p,
-                        text: [p.name, p.code, p.city, p.property_type, p.property_for].filter(Boolean).join(' - ')
+                        text: [p.name, p.code, p.city, p.job_type, p.job_for].filter(Boolean).join(' - ')
                     }));
 
                 setPending(recentPending);
@@ -29,19 +29,19 @@ export default function Let() {
             }
         };
 
-        fetchProperties();
+        fetchJobs();
     }, []);
 
     return (
         <div className="">
-            <h2 className="font-bold bg-[#1664c5] px-3 py-3 text-gray-200 rounded-t-lg">Let Properties: {total}</h2>
+            <h2 className="font-bold bg-[#1664c5] px-3 py-3 text-gray-200 rounded-t-lg">Let Jobs: {total}</h2>
             <div className='p-6'>
-                <h3 className="mb-6 text-gray-700">Recent Let Properties:</h3>
+                <h3 className="mb-6 text-gray-700">Recent Let Jobs:</h3>
 
                 {loading ? (
                     <p>Loading...</p>
                 ) : pending.length === 0 ? (
-                    <p>No properties found</p>
+                    <p>No jobs found</p>
                 ) : (
                     <div className="space-y-3 pb-2">
                         {pending.map(item => (

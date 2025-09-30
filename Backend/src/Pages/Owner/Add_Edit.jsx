@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, Typography, Modal, TextField, IconButton, Autocomplete } from '@mui/material';
+import { Box, Button, Typography, Modal, IconButton, TextField, Autocomplete, MenuItem } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import axios from 'axios';
@@ -18,7 +18,6 @@ const modalStyle = {
     overflowY: 'auto',
 };
 
-
 export default function AddEditOwner({ open, onClose, data, refreshData }) {
     const EndPoint = 'owners';
 
@@ -27,39 +26,29 @@ export default function AddEditOwner({ open, onClose, data, refreshData }) {
     const [loading, setLoading] = useState(false);
     const [agents, setAgents] = useState([]);
 
-    const capitalizeWords = (str) => {
-        return str
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ');
-    };
+    const capitalizeWords = (str) => { return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '); };
+
 
     useEffect(() => {
         if (data) {
-            setFormData({
-                ...data,
-                agent: data.agent?.name || "",
-            });
+            setFormData({ ...data });
         } else {
-            setFormData({
-                agent: "",
-            });
+            setFormData({});
         }
 
         setErrors({});
 
-        axios.get(`${import.meta.env.VITE_SERVER_URL}/api/agents`).then(response => setAgents(response.data)).catch(() => toast.error('Failed to fetch agents.'));
-
+        axios.get(`${import.meta.env.VITE_SERVER_URL}/api/agents`).then((res) => setAgents(res.data)).catch(() => toast.error("Failed to fetch agents."));
     }, [data]);
 
     const validate = () => {
         const newErrors = {};
-        const { agent, name, phone } = formData;
+        const { agent, name, phone, alt_phone } = formData;
 
         if (!agent) newErrors.agent = 'Agent is required.';
         if (!name) newErrors.name = 'Name is required.';
         if (!/^\d+$/.test(phone || '')) newErrors.phone = 'Phone number must contain numbers.';
-
+        if (alt_phone && isNaN(parseFloat(alt_phone))) { newErrors.alt_phone = "Alternative Phone number must contain numbers."; }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -82,37 +71,36 @@ export default function AddEditOwner({ open, onClose, data, refreshData }) {
             toast.success(data?._id ? 'Updated successfully.' : 'Created successfully.');
             refreshData();
             onClose();
-        } catch (error) {
-            const backendErrors = error.response?.data || {};
+        } catch (err) {
+            console.log(err)
             toast.error('Failed to update data.');
+            const backendErrors = err.response?.data || {};
             setErrors({
-                ...backendErrors.includes?.('Phone number already exists') && { phone: 'Phone number already exists.' },
+                ...backendErrors.includes?.('Phone number already exists') && { phone: 'Phone number already exists.' }
             });
         } finally {
             setLoading(false);
         }
     };
 
-
     return (
         <Modal open={open} onClose={onClose}>
             <Box sx={modalStyle} className='max-h-[90vh]'>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                    <Typography className='!font-bold' variant="h6">{data ? 'Update Data' : 'Create New'} </Typography>
+                    <Typography className='!font-bold' variant="h6">{data ? 'Update Data' : 'Create New'}</Typography>
                     <IconButton onClick={onClose}>
                         <CloseIcon />
                     </IconButton>
                 </Box>
+
+
 
                 {[
                     { name: 'name', label: 'Owner Name*' },
                     { name: 'phone', label: 'Phone*' },
                     { name: 'alt_phone', label: 'Alternative Phone' },
                     { name: 'business_name', label: 'Business Name' },
-                    { name: 'business_type', label: 'Business Type' },
                     { name: 'business_address', label: 'Business Address' },
-                    { name: 'note', label: 'Notes' },
-
                 ].map(({ name, label }) => (
                     <TextField
                         key={name}
@@ -150,8 +138,29 @@ export default function AddEditOwner({ open, onClose, data, refreshData }) {
                 />
 
 
+                <TextField
+                    fullWidth
+                    label="Remark"
+                    name="remark"
+                    size="small"
+                    margin="normal"
+                    multiline
+                    minRows={4}
+                    value={formData.remark || ""}
+                    onChange={handleChange}
+                    error={!!errors.remark}
+                    helperText={errors.remark}
+                    sx={{ mb: 2 }}
+                />
 
-                <Button fullWidth variant="contained" sx={{ mt: 2 }} onClick={handleSubmit} disabled={loading} className='!bg-[#1664c5] !font-bold'>
+
+                <Button
+                    fullWidth
+                    variant="contained"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className='!bg-[#1664c5] !font-bold'
+                >
                     {data ? 'Update' : 'Create'}
                 </Button>
             </Box>

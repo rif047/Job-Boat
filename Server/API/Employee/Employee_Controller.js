@@ -12,16 +12,17 @@ let Employees = async (req, res) => {
 
 let Create = async (req, res) => {
     try {
-        let { agent, name, phone, alt_phone, address, city, availability, experience, position, right_to_work, note } = req.body;
+        let { agent, name, phone, alt_phone, address, city, preferred_location, availability, experience, position, right_to_work, remark } = req.body;
 
         if (!agent) { return res.status(400).send('Agent is required!'); }
         if (!name) { return res.status(400).send('Employee Name is required!'); }
         if (!phone) { return res.status(400).send('Phone is required!'); }
         if (!address) { return res.status(400).send('Address is required!'); }
-        if (!city) { return res.status(400).send('Job Preferred City is required!'); }
+        if (!city) { return res.status(400).send('City is required!'); }
+        if (!preferred_location) { return res.status(400).send('Preferred Location is required!'); }
         if (!availability) { return res.status(400).send('Availability is required!'); }
         if (!experience) { return res.status(400).send('Experience is required!'); }
-        if (!position) { return res.status(400).send('Skills is required!'); }
+        if (!position) { return res.status(400).send('Position is required!'); }
         if (!right_to_work) { return res.status(400).send('Right to work is required!'); }
 
 
@@ -37,11 +38,12 @@ let Create = async (req, res) => {
             alt_phone,
             address,
             city,
+            preferred_location,
             availability,
             experience,
             position,
             right_to_work,
-            note,
+            remark,
         });
 
         await newData.save();
@@ -69,16 +71,17 @@ let View = async (req, res) => {
 
 let Update = async (req, res) => {
     try {
-        let { agent, name, phone, alt_phone, address, city, availability, experience, position, right_to_work, note } = req.body;
+        let { agent, name, phone, alt_phone, address, city, preferred_location, availability, experience, position, right_to_work, remark } = req.body;
 
         if (!agent) { return res.status(400).send('Agent is required!'); }
         if (!name) { return res.status(400).send('Employee Name is required!'); }
         if (!phone) { return res.status(400).send('Phone is required!'); }
         if (!address) { return res.status(400).send('Address is required!'); }
-        if (!city) { return res.status(400).send('Job Preferred City is required!'); }
+        if (!city) { return res.status(400).send('City is required!'); }
+        if (!preferred_location) { return res.status(400).send('Preferred Location is required!'); }
         if (!availability) { return res.status(400).send('Availability is required!'); }
         if (!experience) { return res.status(400).send('Experience is required!'); }
-        if (!position) { return res.status(400).send('Skills is required!'); }
+        if (!position) { return res.status(400).send('Position is required!'); }
         if (!right_to_work) { return res.status(400).send('Right to work is required!'); }
 
 
@@ -93,12 +96,13 @@ let Update = async (req, res) => {
         updateData.phone = phone;
         updateData.alt_phone = alt_phone;
         updateData.address = address;
+        updateData.preferred_location = preferred_location;
         updateData.city = city;
         updateData.availability = availability;
         updateData.experience = experience;
         updateData.position = position;
         updateData.right_to_work = right_to_work;
-        updateData.note = note;
+        updateData.remark = remark;
 
         await updateData.save();
         res.status(200).json(updateData);

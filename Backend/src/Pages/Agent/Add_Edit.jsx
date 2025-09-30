@@ -88,7 +88,6 @@ export default function AddEditAgent({ open, onClose, data, refreshData }) {
                     { name: 'name', label: 'Agent Name*' },
                     { name: 'phone', label: 'Phone*' },
                     { name: 'designation', label: 'Designation' },
-                    { name: 'note', label: 'Note' },
                 ].map(({ name, label }) => (
                     <TextField
                         key={name}
@@ -104,6 +103,18 @@ export default function AddEditAgent({ open, onClose, data, refreshData }) {
                         helperText={errors[name]}
                     />
                 ))}
+
+                <TextField
+                    fullWidth
+                    label="Remark"
+                    name="remark"
+                    size="small"
+                    margin="normal"
+                    multiline
+                    minRows={4}
+                    value={formData.remark}
+                    onChange={handleChange}
+                />
 
 
 

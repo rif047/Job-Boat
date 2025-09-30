@@ -1,13 +1,12 @@
 const Mongoose = require('mongoose');
 
 
-let current = new Date();
-let timeStamp = current.setHours(current.getHours() + 6);
-
-
-
 const OwnerSchema = Mongoose.Schema({
     name: {
+        type: String,
+        required: true
+    },
+    agent: {
         type: String,
         required: true
     },
@@ -22,19 +21,16 @@ const OwnerSchema = Mongoose.Schema({
     business_name: {
         type: String
     },
-    business_type: {
-        type: String,
-    },
     business_address: {
         type: String,
     },
-    note: {
+    remark: {
         type: String,
     },
 
     createdOn: {
         type: Date,
-        default: timeStamp
+        default: Date.now
     },
 })
 

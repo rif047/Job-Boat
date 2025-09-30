@@ -1,62 +1,99 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Modal from '@mui/material/Modal';
-import CloseIcon from '@mui/icons-material/Close';
-
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Modal from "@mui/material/Modal";
+import Paper from "@mui/material/Paper";
+import Divider from "@mui/material/Divider";
+import CloseIcon from "@mui/icons-material/Close";
+import PersonIcon from "@mui/icons-material/Person";
+import WorkIcon from "@mui/icons-material/Work";
 
 const modalStyle = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '90%',
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "90%",
     maxWidth: 500,
-    maxHeight: '90vh',
-    bgcolor: 'background.paper',
+    maxHeight: "90vh",
+    bgcolor: "background.paper",
     boxShadow: 24,
     p: 3,
-    overflowY: 'auto',
-    borderRadius: 2,
+    overflowY: "auto",
+    borderRadius: 3,
 };
 
 export default function View({ open, onClose, viewData }) {
-    const fieldsToView = [
-        { label: 'Employee Name', value: viewData?.name },
-        { label: 'Agent Name', value: viewData?.agent?.name },
-        { label: 'Phone', value: viewData?.phone },
-        { label: 'Alternative Phone', value: viewData?.alt_phone },
-        { label: 'Address', value: viewData?.address },
-        { label: 'Preferred City', value: viewData?.city },
-        { label: 'Availability', value: viewData?.availability },
-        { label: 'Experience', value: viewData?.experience },
-        { label: 'Skills', value: viewData?.positions },
-        { label: 'Right to work', value: viewData?.right_to_work },
-        { label: 'Note', value: viewData?.note },
+
+    const personalInfo = [
+        { label: "Employee Name", value: viewData?.name },
+        { label: "Agent Name", value: viewData?.agent },
+        { label: "Phone", value: viewData?.phone },
+        { label: "Alternative Phone", value: viewData?.alt_phone },
+        { label: "Address", value: viewData?.address },
     ];
+
+
+    const workInfo = [
+        { label: "Looking For", value: viewData?.position },
+        { label: "City", value: viewData?.city },
+        { label: "Preferred Location", value: viewData?.preferred_location },
+        { label: "Availability", value: viewData?.availability },
+        { label: "Experience", value: viewData?.experience },
+        { label: "Right to Work", value: viewData?.right_to_work },
+        { label: "Remarks", value: viewData?.remark },
+    ];
+
+    const renderFields = (fields) =>
+        fields.map(
+            (field, index) =>
+                field.value && (
+                    <Typography key={index} sx={{ mb: 0.5 }}>
+                        <span className="font-semibold">{field.label}:</span> {field.value}
+                    </Typography>
+                )
+        );
+
+    const SectionCard = ({ icon, title, children }) => (
+        <Paper
+            elevation={2}
+            sx={{
+                p: 2,
+                borderRadius: 3,
+                mb: 2,
+                bgcolor: "grey.50",
+            }}
+        >
+            <div className="flex items-center mb-2">
+                {icon}
+                <Typography variant="subtitle1" sx={{ ml: 1, fontWeight: "bold" }}>
+                    {title}
+                </Typography>
+            </div>
+            <Divider sx={{ mb: 1 }} />
+            {children}
+        </Paper>
+    );
 
     return (
         <Modal open={open} onClose={onClose}>
-            <Box sx={modalStyle} className='max-h-[90vh]'>
-                <div className='flex justify-between mb-5'>
-                    <Typography variant="h6" component="h2" className='!font-bold !flex !items-center !space-x-1'>
-                        <span>{viewData ? viewData.name.toUpperCase() : 'Loading...'} Details</span>
+            <Box sx={modalStyle}>
+                <div className="flex justify-between items-center mb-4">
+                    <Typography
+                        variant="h5"
+                        sx={{ fontWeight: "bold", letterSpacing: 0.5 }}
+                    >
+                        {viewData ? viewData.name : "Loading..."}
                     </Typography>
-
-                    <div onClick={onClose} className='cursor-pointer'>
+                    <div onClick={onClose} className="cursor-pointer">
                         <CloseIcon />
                     </div>
                 </div>
 
                 {viewData ? (
                     <>
-                        {fieldsToView.map(
-                            (field, index) =>
-                                field.value && (
-                                    <Typography key={index}>
-                                        <strong>{field.label}:</strong> {field.value}
-                                    </Typography>
-                                )
-                        )}
+                        <SectionCard icon={<PersonIcon color="primary" />} title="Personal Info"> {renderFields(personalInfo)} </SectionCard>
+
+                        <SectionCard icon={<WorkIcon color="warning" />} title="Work Info"> {renderFields(workInfo)} </SectionCard>
                     </>
                 ) : (
                     <Typography>Loading...</Typography>

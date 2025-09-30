@@ -81,23 +81,9 @@ export default function Owners() {
         { accessorKey: 'name', header: 'Owner Name' },
         { accessorKey: 'phone', header: 'Phone', enableClickToCopy: true, },
         { accessorKey: 'business_name', header: 'Business Name' },
-        { accessorKey: 'agent', header: 'Agent' },
+        { accessorKey: 'business_address', header: 'Business Address' },
+        { accessorKey: 'agent', header: 'Agent', maxSize: 60 },
     ];
-
-    columns.forEach(column => {
-        if (column.accessorKey !== 'images') {
-            column.Cell = ({ cell }) => {
-                const value = cell.getValue();
-                if (!value) return '';
-                const displayValue = String(value);
-                return (
-                    <span title={displayValue}>
-                        {displayValue.slice(0, 40)}{displayValue.length > 40 && '...'}
-                    </span>
-                );
-            };
-        }
-    });
 
     return (
         <Layout>

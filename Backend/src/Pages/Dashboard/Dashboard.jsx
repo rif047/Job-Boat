@@ -13,14 +13,14 @@ export default function Dashboard() {
     // useEffect(() => {
     //     async function load() {
     //         try {
-    //             const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/properties`);
+    //             const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/jobs`);
     //             const sixMonthsAgo = subMonths(new Date(), 6);
 
     //             const getData = (filterType) => {
     //                 const counts = {};
-    //                 res.data.forEach((property) => {
-    //                     if (property.property_for?.toLowerCase() === filterType && new Date(property.createdOn) >= sixMonthsAgo) {
-    //                         const dateString = new Date(property.createdOn).toISOString().slice(0, 10);
+    //                 res.data.forEach((job) => {
+    //                     if (job.job_for?.toLowerCase() === filterType && new Date(job.createdOn) >= sixMonthsAgo) {
+    //                         const dateString = new Date(job.createdOn).toISOString().slice(0, 10);
     //                         counts[dateString] = (counts[dateString] || 0) + 1;
     //                     }
     //                 });
@@ -38,7 +38,7 @@ export default function Dashboard() {
 
     return (
         <Layout>
-            Dash
+            Dashboard
             {/* <section className="p-4 space-y-6">
                 <h2 className="text-lg font-semibold">Test (last 6 months)</h2>
                 <ResponsiveContainer width="100%" height={300}>

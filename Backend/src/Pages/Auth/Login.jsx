@@ -27,7 +27,7 @@ export default function Login() {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             setUsername('');
             setPassword('');
-            window.city.href = "/";
+            window.location.href = "/";
         } catch (err) {
             console.log(err);
             setError(err.response?.data?.error || 'Login failed');

@@ -1,26 +1,28 @@
 import { useState, useEffect } from 'react';
-import Layout from '../../Layout';
-import Datatable from '../../Components/Datatable/Datatable';
-import Add_Edit from './Add_Edit';
+import Layout from '../../../Layout';
+import Datatable from '../../../Components/Datatable/Datatable';
+import View from './View';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CachedIcon from '@mui/icons-material/Cached';
 
-export default function Positions() {
-    document.title = 'Position';
+export default function Closeds() {
+    document.title = 'Closed Jobs';
 
-    const EndPoint = 'positions';
+    const EndPoint = 'jobs';
 
     const userPermissions = {
-        canEdit: true,
-        canView: false,
-        canDelete: true,
+        canEdit: false,
+        canView: true,
+        canDelete: false,
     };
 
 
     const [modalOpen, setModalOpen] = useState(false);
+    const [viewModalOpen, setViewModalOpen] = useState(false);
     const [editData, setEditData] = useState(null);
+    const [viewData, setViewData] = useState(null);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -29,8 +31,10 @@ export default function Positions() {
         setLoading(true);
         try {
             const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}`);
-            const reversedData = response.data.reverse();
-            setData(reversedData);
+
+            const filteredData = response.data.filter(item => item.status === "LeadLost");
+
+            setData(filteredData.reverse());
         } catch (error) {
             toast.error('Failed to fetch data. Please try again.');
             console.error('Error fetching data:', error);
@@ -41,10 +45,10 @@ export default function Positions() {
 
 
     const handleDelete = async (row) => {
-        if (window.confirm(`Are you sure you want to delete ${row.name.toUpperCase()}?`)) {
+        if (window.confirm(`Are you sure you want to delete ${row.position.toUpperCase()}?`)) {
             try {
                 await axios.delete(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}/${row._id}`);
-                toast.success(`${row.name.toUpperCase()} deleted.`);
+                toast.success(`${row.position.toUpperCase()} deleted.`);
                 fetchData();
             } catch (error) {
                 toast.error('Failed to delete. Please try again.');
@@ -53,27 +57,40 @@ export default function Positions() {
         }
     };
 
-    const handleAdd = () => {
-        setEditData(null);
-        setModalOpen(true);
-    };
-
     const handleEdit = (row) => {
         setEditData(row);
         setModalOpen(true);
+    };
+
+    const handleView = (row) => {
+        setViewData(row);
+        setViewModalOpen(true);
     };
 
     useEffect(() => {
         fetchData();
     }, []);
 
+
+
+    const columns = [
+        { key: "createdOn", accessorFn: (row) => row.createdOn ? new Date(row.createdOn).toLocaleDateString() : '', header: 'Date', maxSize: 80 },
+        { key: "owner", accessorKey: 'owner', header: 'Owner' },
+        { key: "position", accessorKey: 'position', header: 'Position' },
+        { key: "city", accessorKey: 'city', header: 'City' },
+        { key: "wages", accessorFn: row => `${row.wages} £`, header: 'Wage', maxSize: 60 },
+        { key: "accommodation", accessorKey: 'accommodation', header: 'Accom', maxSize: 60 },
+        { key: "agent", accessorKey: 'agent', header: 'agent', maxSize: 80 },
+    ];
+
     return (
         <Layout>
             <ToastContainer position="bottom-right" autoClose={2000} />
 
-            <section className="flex justify-between px-2 md:px-5 py-2 mb-3 bg-[#1664c5]">
+            <section className="flex justify-between px-5 py-2 bg-[#1664c5]">
                 <div className='flex justify-center items-center'>
-                    <h1 className="font-bold text-sm text-white mr-2">Position</h1>
+                    <h1 className="font-bold text-sm md:text-lg text-white mr-2">Lead Lost</h1>
+
                     {loading ? (
                         <div className="flex justify-center items-center text-white">
                             <svg className="animate-spin h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -82,14 +99,11 @@ export default function Positions() {
                         </div>
                     ) : <button className="text-gray-200 cursor-pointer" onClick={fetchData}><CachedIcon /></button>
                     }
-                </div>
-                <div className='flex'>
-                    <button
-                        onClick={handleAdd}
-                        className="bg-[#FFFFFF] text-gray-800 px-6 py-1 rounded-md font-bold text-sm hover:bg-gray-200 cursor-pointer"
-                    >
-                        Create +
-                    </button>
+
+                    <span className="ml-2 text-xs text-gray-300">
+                        Total: {data.length}
+                    </span>
+
                 </div>
             </section>
 
@@ -102,12 +116,10 @@ export default function Positions() {
                     </div>
                 ) : (
                     <Datatable
-                        columns={['name'].map(key => ({
-                            accessorKey: key,
-                            header: key.charAt(0).toUpperCase() + key.slice(1),
-                        }))}
+                        columns={columns}
                         data={data}
                         onEdit={handleEdit}
+                        onView={handleView}
                         onDelete={handleDelete}
                         permissions={userPermissions}
                     />
@@ -120,6 +132,14 @@ export default function Positions() {
                     onClose={() => setModalOpen(false)}
                     data={editData}
                     refreshData={fetchData}
+                />
+            )}
+
+            {viewModalOpen && (
+                <View
+                    open={viewModalOpen}
+                    onClose={() => setViewModalOpen(false)}
+                    viewData={viewData}
                 />
             )}
         </Layout>

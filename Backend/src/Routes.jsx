@@ -5,16 +5,12 @@ import Login from './Pages/Auth/Login';
 import Dashboard from './Pages/Dashboard/Dashboard';
 import Employees from './Pages/Employee/Employees';
 import Owners from './Pages/Owner/Owners';
-import Agent_Properties from './Pages/Agent_Property/Agent_Properties';
-import Properties from './Pages/Property/Properties';
+import Jobs from './Pages/Job/Jobs';
+import In_Progress from './Pages/Job/In_Progress/In_Progresses';
+import Pending_Payment from './Pages/Job/Pending_Payment/Pending_Payments';
+import Closed from './Pages/Job/Closed/Closeds';
+import Lead_Lost from './Pages/Job/Lead_Lost/Lead_Losts';
 import Agents from './Pages/Agent/Agents';
-import Cities from './Pages/City/Cities';
-import Positions from './Pages/Position/Positions';
-import Offering from './Pages/Under Offer/Under_Offers';
-import Lets from './Pages/Let/Lets';
-import Solds from './Pages/Sold/Solds';
-import Expenses from './Pages/Expense/Expenses';
-import Expense_Categories from './Pages/Expense/Category/Expense_Categories';
 import Users from './Pages/User/Users';
 import Settings from './Pages/Setting/Settings';
 
@@ -66,21 +62,18 @@ export default function MainRoutes() {
         <Routes>
             <Route path="/login" element={loggedIn ? <Navigate to="/" replace /> : <Login setLoggedIn={setLoggedIn} />} />
             <Route path="/" element={loggedIn ? <Dashboard handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-            <Route path="/agent_properties" element={loggedIn ? <Agent_Properties handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-            <Route path="/properties" element={loggedIn ? <Properties handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-            <Route path="/offering" element={loggedIn ? <Offering handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-            <Route path="/lets" element={loggedIn ? <Lets handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-            <Route path="/solds" element={loggedIn ? <Solds handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-            <Route path="/agents" element={loggedIn ? <Agents handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-            <Route path="/cities" element={loggedIn ? <Cities handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-            <Route path="/positions" element={loggedIn ? <Positions handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+            <Route path="/jobs" element={loggedIn ? <Jobs handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+            <Route path="/in_progress" element={loggedIn ? <In_Progress handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+            <Route path="/pending_payment" element={loggedIn ? <Pending_Payment handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+            <Route path="/closed" element={loggedIn ? <Closed handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+            <Route path="/lead_lost" element={loggedIn ? <Lead_Lost handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+            <Route path="/employees" element={loggedIn ? <Employees handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+            <Route path="/owners" element={loggedIn ? <Owners handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+
 
             {userType !== "Operator" && (
                 <>
-                    <Route path="/employees" element={loggedIn ? <Employees handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-                    <Route path="/owners" element={loggedIn ? <Owners handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-                    <Route path="/expenses" element={loggedIn ? <Expenses handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-                    <Route path="/expenses/categories" element={loggedIn ? <Expense_Categories handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+                    <Route path="/agents" element={loggedIn ? <Agents handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
                     <Route path="/users" element={loggedIn ? <Users handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
                     <Route path="/settings" element={loggedIn ? <Settings handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
                 </>

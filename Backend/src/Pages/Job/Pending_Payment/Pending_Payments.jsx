@@ -1,22 +1,21 @@
 import { useState, useEffect } from 'react';
-import Layout from '../../Layout';
-import Datatable from '../../Components/Datatable/Datatable';
-import Add_Edit from './Add_Edit';
+import Layout from '../../../Layout';
+import Datatable from '../../../Components/Datatable/Datatable';
 import View from './View';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CachedIcon from '@mui/icons-material/Cached';
 
-export default function Employees() {
-    document.title = 'Employees';
+export default function Closeds() {
+    document.title = 'Closed Jobs';
 
-    const EndPoint = 'employees';
+    const EndPoint = 'jobs';
 
     const userPermissions = {
-        canEdit: true,
+        canEdit: false,
         canView: true,
-        canDelete: true,
+        canDelete: false,
     };
 
 
@@ -32,8 +31,10 @@ export default function Employees() {
         setLoading(true);
         try {
             const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}`);
-            const reversedData = response.data.reverse();
-            setData(reversedData);
+
+            const filteredData = response.data.filter(item => item.status === "PendingPayment");
+
+            setData(filteredData.reverse());
         } catch (error) {
             toast.error('Failed to fetch data. Please try again.');
             console.error('Error fetching data:', error);
@@ -44,21 +45,16 @@ export default function Employees() {
 
 
     const handleDelete = async (row) => {
-        if (window.confirm(`Are you sure you want to delete ${row.name.toUpperCase()}?`)) {
+        if (window.confirm(`Are you sure you want to delete ${row.position.toUpperCase()}?`)) {
             try {
                 await axios.delete(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}/${row._id}`);
-                toast.success(`${row.name.toUpperCase()} deleted.`);
+                toast.success(`${row.position.toUpperCase()} deleted.`);
                 fetchData();
             } catch (error) {
                 toast.error('Failed to delete. Please try again.');
                 console.error('Error deleting data:', error);
             }
         }
-    };
-
-    const handleAdd = () => {
-        setEditData(null);
-        setModalOpen(true);
     };
 
     const handleEdit = (row) => {
@@ -78,29 +74,15 @@ export default function Employees() {
 
 
     const columns = [
-        { accessorKey: 'name', header: 'Employee Name' },
-        { accessorKey: 'phone', header: 'Phone', enableClickToCopy: true, },
-        { accessorKey: 'city', header: 'City' },
-        { accessorKey: 'position', header: 'Position' },
-        { accessorKey: 'right_to_work', header: 'RTW', maxSize: 60 },
-        { accessorKey: 'availability', header: 'Availability', maxSize: 60 },
-        { accessorKey: 'agent', header: 'Agent', maxSize: 60 },
+        { key: "date", accessorKey: 'owner', header: 'Date' },
+        { key: "owner", accessorKey: 'owner', header: 'Owner' },
+        { key: "position", accessorKey: 'position', header: 'Position' },
+        { key: "city", accessorKey: 'city', header: 'City' },
+        { key: "wages", accessorFn: row => `${row.wages} £`, header: 'Wage', maxSize: 60 },
+        { key: "charge", accessorFn: row => `${row.wages} £`, header: 'Charge', maxSize: 60 },
+        { key: "accommodation", accessorKey: 'accommodation', header: 'Accom', maxSize: 60 },
+        { key: "agent", accessorKey: 'agent', header: 'agent', maxSize: 80 },
     ];
-
-    columns.forEach(column => {
-        if (column.accessorKey !== 'images') {
-            column.Cell = ({ cell }) => {
-                const value = cell.getValue();
-                if (!value) return '';
-                const displayValue = String(value);
-                return (
-                    <span title={displayValue}>
-                        {displayValue.slice(0, 40)}{displayValue.length > 40 && '...'}
-                    </span>
-                );
-            };
-        }
-    });
 
     return (
         <Layout>
@@ -108,7 +90,7 @@ export default function Employees() {
 
             <section className="flex justify-between px-5 py-2 bg-[#1664c5]">
                 <div className='flex justify-center items-center'>
-                    <h1 className="font-bold text-sm md:text-lg text-white mr-2">Employee List</h1>
+                    <h1 className="font-bold text-sm md:text-lg text-white mr-2">Payment Pending</h1>
 
                     {loading ? (
                         <div className="flex justify-center items-center text-white">
@@ -124,12 +106,6 @@ export default function Employees() {
                     </span>
 
                 </div>
-                <button
-                    onClick={handleAdd}
-                    className="bg-[#FFFFFF] text-gray-800 px-6 py-1 rounded-md font-bold text-sm hover:bg-gray-200 cursor-pointer"
-                >
-                    Create +
-                </button>
             </section>
 
             <section>

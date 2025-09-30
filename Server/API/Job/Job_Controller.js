@@ -1,123 +1,42 @@
-let Property = require('./Job_Model');
-let multer = require('multer');
-let sharp = require('sharp');
-let path = require('path');
-let FS = require('fs');
-
-
-const EndPoint = 'properties'
-
-let storage = multer.memoryStorage();
-
-let fileFilter = function (req, file, cb) {
-    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-        return cb('Only JPG and PNG files are allowed!', false);
-    }
-    cb(null, true);
-};
-
-let uploadImages = multer({
-    storage: storage,
-    // limits: {
-    //     fileSize: 3 * 1024 * 1024,
-    //     files: 5
-    // },
-    fileFilter: fileFilter
-}).array('images');
-
-
-async function compressAndSaveImages(files, dataName) {
-    const imageFilenames = [];
-    for (const file of files) {
-        const currentDateTime = new Date().toISOString().replace(/[:.-]/g, '');
-        const imageName = `${dataName}-${currentDateTime}-${file.originalname}`;
-        const outputPath = path.join(`Assets/Images/${EndPoint}/`, imageName);
-
-
-        await sharp(file.buffer)
-            .resize(800, 800, {
-                fit: sharp.fit.inside,
-                withoutEnlargement: true
-            })
-            .jpeg({ quality: 80 })
-            .toFile(outputPath);
-
-        imageFilenames.push(imageName);
-    }
-    return imageFilenames;
-}
+let Job = require('./Job_Model');
 
 
 
-
-
-
-
-
-
-let Properties = async (req, res) => {
-    let Data = await Property.find().populate(['owner', 'employee']);
+let Jobs = async (req, res) => {
+    let Data = await Job.find();
     res.status(200).json(Data);
 };
 
 
 
-
-
-
-
-
 let Create = async (req, res) => {
     try {
-        const { name, code, city, property_type, property_for, decimal, sqft, agree_price, sell_price, drive, map, source, comments, owner, employee, date, status } = req.body;
+        const { position, city, business_name, owner, wages, accommodation, required_experience, remark, agent, right_to_work } = req.body;
 
-        const requiredFields = {
-            name: 'Property Name',
-            code: 'Property Code',
-            property_type: 'Property Type',
-            property_for: 'Property For Sell/Let',
-            decimal: 'Decimal',
-            agree_price: 'Agreed Price',
-            owner: 'Owner'
-        };
+        for (let [key, label] of Object.entries({
+            position: 'Job Position',
+            city: 'City',
+            owner: 'Owner',
+            agent: 'Agent'
+        })) { if (!req.body[key]) return res.status(400).send(`${label} is required!`); }
 
-        for (let [key, label] of Object.entries(requiredFields)) {
-            if (!req.body[key]) {
-                return res.status(400).send(`${label} is required!`);
-            }
-        }
+        const now = new Date();
+        const pad = n => String(n).padStart(2, "0");
+        const code = `JBL-${pad(now.getDate())}${pad(now.getMonth() + 1)}${String(now.getFullYear()).slice(-2)}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
 
-        let checkName = await Property.findOne({ name: name.toLowerCase() });
-        if (checkName) { return res.status(400).send('Name already exists'); }
-
-        let checkCode = await Property.findOne({ code: code.toLowerCase() });
-        if (checkCode) { return res.status(400).send('Code already exists'); }
-
-
-        let images = [];
-        if (req.files?.length) {
-            images = await compressAndSaveImages(req.files, name.toLowerCase());
-        }
-
-        let newData = new Property({
-            name: name.toLowerCase(),
-            code: code.toLowerCase(),
-            city: city,
-            property_type: property_type,
-            property_for: property_for,
-            decimal,
-            sqft,
-            agree_price,
-            sell_price,
-            drive,
-            map,
-            date: date ? new Date(date).toISOString().split('T')[0] : undefined,
-            source: source,
-            comments,
+        let newData = new Job({
+            position,
+            code,
+            city,
+            business_name,
             owner,
-            employee,
-            status: 'Pending',
-            images
+            wages,
+            accommodation,
+            agent,
+            remark,
+            required_experience,
+            right_to_work,
+            status: 'Pending'
         });
 
         await newData.save();
@@ -135,8 +54,9 @@ let Create = async (req, res) => {
 
 
 
+
 let View = async (req, res) => {
-    let viewOne = await Property.findById(req.params.id).populate('owner').populate('employee');
+    let viewOne = await Job.findById(req.params.id);
     res.send(viewOne);
 };
 
@@ -149,16 +69,13 @@ let View = async (req, res) => {
 
 let Update = async (req, res) => {
     try {
-        const { name, code, city, property_type, property_for, decimal, sqft, agree_price, sell_price, drive, map, source, comments, owner } = req.body;
+        const { position, city, business_name, owner, wages, accommodation, required_experience, agent, remark, right_to_work } = req.body;
 
         const requiredFields = {
-            name: 'Property Name',
-            code: 'Property Code',
-            property_type: 'Property Type',
-            property_for: 'Property For Sell/Let',
-            decimal: 'Decimal',
-            agree_price: 'Agreed Price',
-            owner: 'Owner'
+            position: 'Job Position',
+            city: 'City',
+            owner: 'Owner',
+            agent: 'Agent',
         };
 
         for (let [key, label] of Object.entries(requiredFields)) {
@@ -168,35 +85,18 @@ let Update = async (req, res) => {
         }
 
 
-        let checkName = await Property.findOne({ name: name.toLowerCase(), _id: { $ne: req.params.id } });
-        if (checkName) { return res.status(400).send('This name already exists'); }
+        let updateData = await Job.findById(req.params.id);
 
-        let checkCode = await Property.findOne({ code: code.toLowerCase(), _id: { $ne: req.params.id } });
-        if (checkCode) { return res.status(400).send('This code already exists'); }
-
-
-        let updateData = await Property.findById(req.params.id);
-
-        let images = [];
-        if (req.files?.length) {
-            images = await compressAndSaveImages(req.files, name.toLowerCase());
-        }
-
-        updateData.name = name.toLowerCase();
-        updateData.code = code.toLowerCase();
+        updateData.position = position;
         updateData.city = city;
-        updateData.property_type = property_type;
-        updateData.property_for = property_for;
-        updateData.decimal = decimal;
-        updateData.sqft = sqft;
-        updateData.agree_price = agree_price;
-        updateData.sell_price = sell_price;
-        updateData.drive = drive;
-        updateData.map = map;
-        updateData.source = source;
-        updateData.comments = comments;
+        updateData.business_name = business_name;
         updateData.owner = owner;
-        updateData.images = images.length > 0 ? images : updateData.images;
+        updateData.wages = wages;
+        updateData.accommodation = accommodation;
+        updateData.required_experience = required_experience;
+        updateData.agent = agent;
+        updateData.right_to_work = right_to_work;
+        updateData.remark = remark;
 
         await updateData.save();
         res.status(200).json(updateData);
@@ -212,15 +112,16 @@ let Update = async (req, res) => {
 
 
 
-let UpdateOffering = async (req, res) => {
+let InProgress = async (req, res) => {
     try {
-        const { employee, sell_price, date, status } = req.body;
+        const { agent, date, charge, wages, employee, status } = req.body;
 
         const requiredFields = {
-            employee: 'Employee',
+            agent: 'Agent',
             date: 'Date',
-            status: 'Status',
-            sell_price: 'Final Price',
+            charge: 'Charge',
+            wages: 'Wage',
+            employee: 'Employee',
         };
 
         for (let [key, label] of Object.entries(requiredFields)) {
@@ -229,11 +130,12 @@ let UpdateOffering = async (req, res) => {
             }
         }
 
-        let updateData = await Property.findById(req.params.id);
+        let updateData = await Job.findById(req.params.id);
 
-        updateData.sell_price = sell_price;
-        updateData.employee = employee;
-        updateData.status = 'Offering';
+        updateData.agent = agent;
+        updateData.charge = charge;
+        updateData.wages = wages;
+        updateData.status = 'InProgress';
         updateData.date = date ? new Date(date).toISOString().split('T')[0] : undefined;
 
         await updateData.save();
@@ -254,100 +156,139 @@ let UpdateOffering = async (req, res) => {
 
 
 
-let CancelOffering = async (req, res) => {
+let PendingPayment = async (req, res) => {
+    try {
+        const { agent, date, charge, wages, employee, status } = req.body;
+
+        const requiredFields = {
+            agent: 'Agent',
+            date: 'Date',
+            charge: 'Charge',
+            wages: 'Wage',
+            employee: 'Employee',
+        };
+
+        for (let [key, label] of Object.entries(requiredFields)) {
+            if (!req.body[key]) {
+                return res.status(400).send(`${label} is required!`);
+            }
+        }
+
+        let updateData = await Job.findById(req.params.id);
+
+        updateData.agent = agent;
+        updateData.charge = charge;
+        updateData.wages = wages;
+        updateData.status = 'PendingPayment';
+        updateData.date = date ? new Date(date).toISOString().split('T')[0] : undefined;
+
+        await updateData.save();
+        res.status(200).json(updateData);
+        console.log('Updated Successfully');
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Updating Error!!!');
+    }
+}
+
+
+
+
+
+
+
+
+
+let Closed = async (req, res) => {
+    try {
+        const { agent, date, charge, wages, employee, status } = req.body;
+
+        const requiredFields = {
+            agent: 'Agent',
+            date: 'Date',
+            charge: 'Charge',
+            wages: 'Wage',
+            employee: 'Employee',
+        };
+
+        for (let [key, label] of Object.entries(requiredFields)) {
+            if (!req.body[key]) {
+                return res.status(400).send(`${label} is required!`);
+            }
+        }
+
+        let updateData = await Job.findById(req.params.id);
+
+        updateData.agent = agent;
+        updateData.charge = charge;
+        updateData.wages = wages;
+        updateData.status = 'Closed';
+        updateData.date = date ? new Date(date).toISOString().split('T')[0] : undefined;
+
+        await updateData.save();
+        res.status(200).json(updateData);
+        console.log('Updated Successfully');
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Updating Error!!!');
+    }
+}
+
+
+
+let LeadLost = async (req, res) => {
     try {
 
-        let updateData = await Property.findById(req.params.id);
+        let updateData = await Job.findById(req.params.id);
 
         if (!updateData) {
-            return res.status(404).send('Property not found');
+            return res.status(404).send('Job not found');
         }
         updateData.employee = null;
-        updateData.status = 'Pending';
-        updateData.date = null;
+        updateData.status = 'LeadLost';
 
         await updateData.save();
         console.log('Canceled Successfully');
         res.status(200).json(updateData);
 
     } catch (error) {
-        console.error('Error canceling offering:', error);
-        res.status(500).send('Error canceling offering');
+        console.error('Error canceling:', error);
+        res.status(500).send('Error canceling');
     }
 }
 
 
 
-
-
-
-
-
-
-let UpdateStatus = async (req, res) => {
+let DealCancelled = async (req, res) => {
     try {
-        const { employee, sell_price, date, status } = req.body;
 
-        const requiredFields = {
-            employee: 'Employee',
-            date: 'Date',
-            status: 'Status',
-            sell_price: 'Final Price',
-        };
+        let updateData = await Job.findById(req.params.id);
 
-        for (let [key, label] of Object.entries(requiredFields)) {
-            if (!req.body[key]) {
-                return res.status(400).send(`${label} is required!`);
-            }
+        if (!updateData) {
+            return res.status(404).send('Job not found');
         }
-
-        let updateData = await Property.findById(req.params.id);
-
-        updateData.sell_price = sell_price;
-        updateData.employee = employee;
-        updateData.status = status;
-        updateData.date = date ? new Date(date).toISOString().split('T')[0] : undefined;
+        updateData.employee = null;
+        updateData.status = 'DealCancelled';
 
         await updateData.save();
+        console.log('Canceled Successfully');
         res.status(200).json(updateData);
-        console.log('Updated Successfully');
 
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Updating Error!!!');
+        console.error('Error canceling:', error);
+        res.status(500).send('Error canceling');
     }
 }
-
-
 
 
 
 
 let Delete = async (req, res) => {
-    try {
-        const DeleteOne = await Property.findById(req.params.id);
-
-        if (!DeleteOne) {
-            return res.status(404).send('Property not found');
-        }
-
-        if (DeleteOne.images?.length) {
-            DeleteOne.images.forEach((image) => {
-                const imagePath = path.join(`Assets/Images/${EndPoint}/`, image);
-                if (FS.existsSync(imagePath)) {
-                    FS.unlinkSync(imagePath);
-                }
-            });
-        }
-
-        await Property.findByIdAndDelete(req.params.id);
-
-        res.status(200).send('Deleted Successfully');
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Error Deleting Property');
-    }
-};
+    await Job.findByIdAndDelete(req.params.id);
+    res.send('Deleted')
+}
 
 
-module.exports = { Properties, Create, View, Update, UpdateOffering, CancelOffering, UpdateStatus, Delete, uploadImages };
+module.exports = { Jobs, Create, View, Update, InProgress, PendingPayment, Closed, LeadLost, DealCancelled, Delete };

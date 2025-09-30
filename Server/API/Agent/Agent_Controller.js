@@ -12,7 +12,7 @@ let Agents = async (req, res) => {
 
 let Create = async (req, res) => {
     try {
-        let { name, phone, designation, note } = req.body;
+        let { name, phone, designation, remark } = req.body;
 
         if (!name) { return res.status(400).send('Agent Name is required!'); }
         if (!phone) { return res.status(400).send('Phone is required!'); }
@@ -28,7 +28,7 @@ let Create = async (req, res) => {
             name,
             phone,
             designation,
-            note
+            remark
         });
 
         await newData.save();
@@ -56,7 +56,7 @@ let View = async (req, res) => {
 
 let Update = async (req, res) => {
     try {
-        let { name, phone, designation, note } = req.body;
+        let { name, phone, designation, remark } = req.body;
 
         if (!name) { return res.status(400).send('Agent Name is required!'); }
         if (!phone) { return res.status(400).send('Phone is required!'); }
@@ -72,7 +72,7 @@ let Update = async (req, res) => {
         updateData.name = name;
         updateData.phone = phone;
         updateData.designation = designation;
-        updateData.note = note;
+        updateData.remark = remark;
 
         await updateData.save();
         res.status(200).json(updateData);

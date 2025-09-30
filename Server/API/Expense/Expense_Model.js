@@ -1,8 +1,7 @@
 const Mongoose = require('mongoose');
 
 
-let current = new Date();
-let timeStamp = current.setHours(current.getHours() + 6);
+
 
 
 
@@ -32,7 +31,7 @@ const ExpenseSchema = Mongoose.Schema({
     },
     createdOn: {
         type: Date,
-        default: timeStamp
+        default: Date.now
     },
 })
 

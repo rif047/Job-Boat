@@ -1,13 +1,13 @@
 const Mongoose = require('mongoose');
 
 
-let current = new Date();
-let timeStamp = current.setHours(current.getHours() + 6);
+
+let bdOffset = 6 * 60;
 
 
 
-const PropertySchema = Mongoose.Schema({
-    name: {
+const JobSchema = Mongoose.Schema({
+    position: {
         type: String,
         required: true
     },
@@ -17,61 +17,50 @@ const PropertySchema = Mongoose.Schema({
     },
     city: {
         type: String,
-    },
-    property_type: {
-        type: String,
-    },
-    property_for: {
-        type: String,
-    },
-    decimal: {
-        type: Number
-    },
-    sqft: {
-        type: Number
-    },
-    agree_price: {
-        type: Number
-    },
-    sell_price: {
-        type: Number
-    },
-    drive: {
-        type: String
-    },
-    map: {
-        type: String
-    },
-    source: {
-        type: String
-    },
-    comments: {
-        type: String
-    },
-    images: {
-        type: [String]
-    },
-    owner: {
-        type: Mongoose.Types.ObjectId,
-        ref: 'Owner',
         required: true
     },
+    business_name: {
+        type: String,
+    },
+    owner: {
+        type: String
+    },
     employee: {
-        type: Mongoose.Types.ObjectId,
-        ref: 'Employee',
+        type: String
+    },
+    agent: {
+        type: String
+    },
+    wages: {
+        type: Number,
+    },
+    charge: {
+        type: Number
+    },
+    accommodation: {
+        type: String
+    },
+    required_experience: {
+        type: String
     },
     date: {
+        type: String
+    },
+    right_to_work: {
         type: String
     },
     status: {
         type: String
     },
+    remark: {
+        type: String
+    },
     createdOn: {
         type: Date,
-        default: timeStamp
+        default: Date.now
     },
 })
 
-let Property = Mongoose.model('Property', PropertySchema)
+let Job = Mongoose.model('Job', JobSchema)
 
-module.exports = Property;
+module.exports = Job;

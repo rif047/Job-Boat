@@ -5,9 +5,37 @@ body {
 }
 
 * {
-    transition-Property: all;
+    transition-Job: all;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 100ms;
+}
+
+@keyframes fade-left {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+
+:root {
+    --toastify-color-success: #6cbf6c !important;
+    --toastify-color-info: #f7e628 !important;
 }
 
 ::-webkit-scrollbar {
@@ -23,17 +51,11 @@ body {
 }
 
 
-@keyframes fade-left {
-    from {
-        opacity: 0;
-        transform: translateX(-10px);
-    }
 
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
+
+
+
+
 
 .animate-fade-left {
     animation: fade-left 0.5s ease-out;
@@ -51,17 +73,6 @@ body {
     position: relative;
 }
 
-.active {
-    background-color: #1664c6;
-    border-radius: 5px;
-    color: #FFFFFF;
-    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
-}
-
-.active:hover {
-    background-color: #3fa35e;
-}
-
 .noActive {
     box-shadow: none;
     background-color: transparent;
@@ -72,25 +83,11 @@ body {
     color: #FFFFFF !important;
 }
 
-:root {
-    --toastify-color-success: #6cbf6c !important;
-    --toastify-color-info: #f7e628 !important;
-}
 
 .Toastify__toast-container {
     bottom: 30px !important;
 }
 
-
-@keyframes marquee {
-    0% {
-        transform: translateX(0);
-    }
-
-    100% {
-        transform: translateX(-50%);
-    }
-}
 
 .actionBtn .css-1umw9bq-MuiSvgIcon-root {
     font-size: 18px !important;

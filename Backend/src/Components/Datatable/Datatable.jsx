@@ -52,7 +52,7 @@ export default function Datatable({ columns, data, onEdit, onView, onDelete, per
         {
             id: 'actions',
             header: 'Actions',
-            size: 50,
+            maxSize: 130,
             Cell: ({ row }) => (
                 <div className="space-x-2">
                     {permissions.canView && (

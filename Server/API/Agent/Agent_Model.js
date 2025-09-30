@@ -1,8 +1,7 @@
 const Mongoose = require('mongoose');
 
 
-let current = new Date();
-let timeStamp = current.setHours(current.getHours() + 6);
+
 
 
 
@@ -20,13 +19,13 @@ const AgentSchema = Mongoose.Schema({
         type: String,
         required: true
     },
-    note: {
+    remark: {
         type: String,
     },
 
     createdOn: {
         type: Date,
-        default: timeStamp
+        default: Date.now
     },
 })
 

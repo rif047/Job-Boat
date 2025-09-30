@@ -12,25 +12,24 @@ let Owners = async (req, res) => {
 
 let Create = async (req, res) => {
     try {
-        let { name, phone, alt_phone, business_name, business_type, business_address, note } = req.body;
+        let { agent, name, phone, alt_phone, business_name, business_address, remark } = req.body;
 
+        if (!agent) { return res.status(400).send('Agent is required!'); }
         if (!name) { return res.status(400).send('Owner Name is required!'); }
         if (!phone) { return res.status(400).send('Phone is required!'); }
-
 
         let checkPhone = await Owner.findOne({ phone });
         if (checkPhone) { return res.status(400).send('Phone number already exists. Use different one.'); };
 
 
-
         let newData = new Owner({
+            agent,
             name,
             phone,
             alt_phone,
             business_name,
-            business_type,
             business_address,
-            note,
+            remark,
         });
 
         await newData.save();
@@ -58,11 +57,11 @@ let View = async (req, res) => {
 
 let Update = async (req, res) => {
     try {
-        let { name, phone, alt_phone, business_name, business_type, business_address, note } = req.body;
+        let { agent, name, phone, alt_phone, business_name, business_address, remark } = req.body;
 
+        if (!agent) { return res.status(400).send('Agent is required!'); }
         if (!name) { return res.status(400).send('Owner Name is required!'); }
         if (!phone) { return res.status(400).send('Phone is required!'); }
-
 
         let checkPhone = await Owner.findOne({ phone: phone, _id: { $ne: req.params.id } });
         if (checkPhone) { return res.status(400).send('Phone number already exists. Use different one.'); }
@@ -70,13 +69,13 @@ let Update = async (req, res) => {
 
         let updateData = await Owner.findById(req.params.id);
 
+        updateData.agent = agent;
         updateData.name = name;
         updateData.phone = phone;
         updateData.alt_phone = alt_phone;
         updateData.business_name = business_name;
-        updateData.business_type = business_type;
         updateData.business_address = business_address;
-        updateData.note = note;
+        updateData.remark = remark;
 
         await updateData.save();
         res.status(200).json(updateData);
