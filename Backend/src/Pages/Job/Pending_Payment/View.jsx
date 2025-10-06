@@ -42,7 +42,24 @@ export default function View({ open, onClose, viewData }) {
                             <Typography><strong>Position:</strong> {viewData.position}</Typography>
                             <Typography><strong>City:</strong> {viewData.city}</Typography>
                             <Typography><strong>Owner:</strong> {viewData.owner}</Typography>
+                            <Typography><strong>Employee:</strong> {viewData.employee}</Typography>
                             <Typography><strong>Business Name:</strong> {viewData.business_name}</Typography>
+                            <Typography><strong>Source:</strong> {viewData.source}</Typography>
+                            <Typography>
+                                <strong>Source Link: </strong>
+                                {viewData?.source_link ? (
+                                    <a
+                                        href={viewData.source_link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ color: "#1976d2", textDecoration: "underline" }}
+                                    >
+                                        {viewData.source_link}
+                                    </a>
+                                ) : (
+                                    "N/A"
+                                )}
+                            </Typography>
 
 
                         </Box>
@@ -51,11 +68,12 @@ export default function View({ open, onClose, viewData }) {
                             <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
                                 Requirements
                             </Typography>
-                            <Typography><strong>Wage:</strong> {viewData.wages} £</Typography>
-                            <Typography><strong>Charge:</strong> {viewData?.charge} £</Typography>
-                            <Typography><strong>Accommodation:</strong> {viewData.accommodation}</Typography>
-                            <Typography><strong>Required Experience:</strong> {viewData.required_experience}</Typography>
-                            <Typography><strong>Right to Work:</strong> {viewData.right_to_work}</Typography>
+                            <Typography><strong>Wage: </strong>£{viewData.wages}</Typography>
+                            <Typography><strong>Fees: </strong>£{viewData?.fee}</Typography>
+                            <Typography><strong>Advance Fees: </strong>£{viewData?.advance_fee}</Typography>
+                            <Typography><strong>Accommodation: </strong> {viewData.accommodation}</Typography>
+                            <Typography><strong>Required Experience: </strong> {viewData.required_experience}</Typography>
+                            <Typography><strong>Right to Work: </strong> {viewData.right_to_work}</Typography>
                         </Box>
 
                         <Box>
@@ -68,13 +86,11 @@ export default function View({ open, onClose, viewData }) {
                             <Typography>
                                 <strong>Lead Created On:</strong>{' '}
                                 {viewData.createdOn
-                                    ? new Date(viewData.createdOn).toLocaleString('en-BD', {
-                                        hour12: true,
-                                        timeZone: 'Asia/Dhaka'
-                                    })
+                                    ? new Date(viewData.createdOn).toISOString().split("T")[0]
                                     : ''
                                 }
                             </Typography>
+
 
 
                             <Typography><strong>Remarks:</strong> {viewData.remark}</Typography>

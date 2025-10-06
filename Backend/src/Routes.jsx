@@ -6,7 +6,6 @@ import Dashboard from './Pages/Dashboard/Dashboard';
 import Employees from './Pages/Employee/Employees';
 import Owners from './Pages/Owner/Owners';
 import Jobs from './Pages/Job/Jobs';
-import In_Progress from './Pages/Job/In_Progress/In_Progresses';
 import Pending_Payment from './Pages/Job/Pending_Payment/Pending_Payments';
 import Closed from './Pages/Job/Closed/Closeds';
 import Lead_Lost from './Pages/Job/Lead_Lost/Lead_Losts';
@@ -63,7 +62,6 @@ export default function MainRoutes() {
             <Route path="/login" element={loggedIn ? <Navigate to="/" replace /> : <Login setLoggedIn={setLoggedIn} />} />
             <Route path="/" element={loggedIn ? <Dashboard handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
             <Route path="/jobs" element={loggedIn ? <Jobs handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-            <Route path="/in_progress" element={loggedIn ? <In_Progress handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
             <Route path="/pending_payment" element={loggedIn ? <Pending_Payment handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
             <Route path="/closed" element={loggedIn ? <Closed handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
             <Route path="/lead_lost" element={loggedIn ? <Lead_Lost handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />

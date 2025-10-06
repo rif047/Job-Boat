@@ -11,18 +11,35 @@ let Jobs = async (req, res) => {
 
 let Create = async (req, res) => {
     try {
-        const { position, city, business_name, owner, wages, accommodation, required_experience, remark, agent, right_to_work } = req.body;
+        const { position, city, business_name, owner, wages, accommodation, required_experience, remark, agent, right_to_work, source, source_link } = req.body;
 
         for (let [key, label] of Object.entries({
             position: 'Job Position',
             city: 'City',
             owner: 'Owner',
-            agent: 'Agent'
+            agent: 'Agent',
+            source: 'Source',
         })) { if (!req.body[key]) return res.status(400).send(`${label} is required!`); }
 
-        const now = new Date();
-        const pad = n => String(n).padStart(2, "0");
-        const code = `JBL-${pad(now.getDate())}${pad(now.getMonth() + 1)}${String(now.getFullYear()).slice(-2)}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+        let checkSourceLink = await Job.findOne({ source_link });
+        if (checkSourceLink) { return res.status(400).send('Source link already exists. Use different one.'); };
+
+
+
+        const generateJobCode = () => {
+            const timePart = Date.now().toString().slice(-3);
+            const randomPart = Math.floor(10 + Math.random() * 90);
+            return `JBL-${timePart}${randomPart}`;
+        };
+
+
+        let code;
+        let isUnique = false;
+        while (!isUnique) {
+            code = generateJobCode();
+            const exists = await Job.findOne({ code });
+            if (!exists) isUnique = true;
+        }
 
         let newData = new Job({
             position,
@@ -33,6 +50,8 @@ let Create = async (req, res) => {
             wages,
             accommodation,
             agent,
+            source,
+            source_link,
             remark,
             required_experience,
             right_to_work,
@@ -69,13 +88,14 @@ let View = async (req, res) => {
 
 let Update = async (req, res) => {
     try {
-        const { position, city, business_name, owner, wages, accommodation, required_experience, agent, remark, right_to_work } = req.body;
+        const { position, city, business_name, owner, wages, accommodation, required_experience, agent, remark, right_to_work, source, source_link } = req.body;
 
         const requiredFields = {
             position: 'Job Position',
             city: 'City',
             owner: 'Owner',
             agent: 'Agent',
+            source: 'Source',
         };
 
         for (let [key, label] of Object.entries(requiredFields)) {
@@ -83,6 +103,10 @@ let Update = async (req, res) => {
                 return res.status(400).send(`${label} is required!`);
             }
         }
+
+
+        let checkSourceLink = await Job.findOne({ source_link: source_link, _id: { $ne: req.params.id } });
+        if (checkSourceLink) { return res.status(400).send('Source link already exists. Use different one.'); }
 
 
         let updateData = await Job.findById(req.params.id);
@@ -95,6 +119,8 @@ let Update = async (req, res) => {
         updateData.accommodation = accommodation;
         updateData.required_experience = required_experience;
         updateData.agent = agent;
+        updateData.source = source;
+        updateData.source_link = source_link;
         updateData.right_to_work = right_to_work;
         updateData.remark = remark;
 
@@ -112,60 +138,17 @@ let Update = async (req, res) => {
 
 
 
-let InProgress = async (req, res) => {
-    try {
-        const { agent, date, charge, wages, employee, status } = req.body;
-
-        const requiredFields = {
-            agent: 'Agent',
-            date: 'Date',
-            charge: 'Charge',
-            wages: 'Wage',
-            employee: 'Employee',
-        };
-
-        for (let [key, label] of Object.entries(requiredFields)) {
-            if (!req.body[key]) {
-                return res.status(400).send(`${label} is required!`);
-            }
-        }
-
-        let updateData = await Job.findById(req.params.id);
-
-        updateData.agent = agent;
-        updateData.charge = charge;
-        updateData.wages = wages;
-        updateData.status = 'InProgress';
-        updateData.date = date ? new Date(date).toISOString().split('T')[0] : undefined;
-
-        await updateData.save();
-        res.status(200).json(updateData);
-        console.log('Updated Successfully');
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Updating Error!!!');
-    }
-}
-
-
-
-
-
-
-
-
 
 let PendingPayment = async (req, res) => {
     try {
-        const { agent, date, charge, wages, employee, status } = req.body;
+        const { agent, date, fee, wages, employee, advance_fee, status, remark } = req.body;
 
         const requiredFields = {
             agent: 'Agent',
-            date: 'Date',
-            charge: 'Charge',
+            fee: 'Fees',
             wages: 'Wage',
             employee: 'Employee',
+            advance_fee: 'Advance Fee',
         };
 
         for (let [key, label] of Object.entries(requiredFields)) {
@@ -177,10 +160,13 @@ let PendingPayment = async (req, res) => {
         let updateData = await Job.findById(req.params.id);
 
         updateData.agent = agent;
-        updateData.charge = charge;
+        updateData.advance_fee = advance_fee || 0;
+        updateData.fee = fee;
         updateData.wages = wages;
+        updateData.employee = employee;
+        updateData.remark = remark;
         updateData.status = 'PendingPayment';
-        updateData.date = date ? new Date(date).toISOString().split('T')[0] : undefined;
+        updateData.date = new Date().toISOString().split('T')[0];
 
         await updateData.save();
         res.status(200).json(updateData);
@@ -202,12 +188,11 @@ let PendingPayment = async (req, res) => {
 
 let Closed = async (req, res) => {
     try {
-        const { agent, date, charge, wages, employee, status } = req.body;
+        const { agent, date, fee, wages, employee, status, remark } = req.body;
 
         const requiredFields = {
             agent: 'Agent',
-            date: 'Date',
-            charge: 'Charge',
+            fee: 'Fees',
             wages: 'Wage',
             employee: 'Employee',
         };
@@ -221,10 +206,12 @@ let Closed = async (req, res) => {
         let updateData = await Job.findById(req.params.id);
 
         updateData.agent = agent;
-        updateData.charge = charge;
+        updateData.fee = fee;
         updateData.wages = wages;
+        updateData.employee = employee;
+        updateData.remark = remark;
         updateData.status = 'Closed';
-        updateData.date = date ? new Date(date).toISOString().split('T')[0] : undefined;
+        updateData.date = new Date().toISOString().split('T')[0];
 
         await updateData.save();
         res.status(200).json(updateData);
@@ -246,7 +233,8 @@ let LeadLost = async (req, res) => {
         if (!updateData) {
             return res.status(404).send('Job not found');
         }
-        updateData.employee = null;
+
+        updateData.date = new Date().toISOString().split('T')[0];
         updateData.status = 'LeadLost';
 
         await updateData.save();
@@ -269,8 +257,8 @@ let DealCancelled = async (req, res) => {
         if (!updateData) {
             return res.status(404).send('Job not found');
         }
-        updateData.employee = null;
-        updateData.status = 'DealCancelled';
+        updateData.date = '';
+        updateData.status = 'Pending';
 
         await updateData.save();
         console.log('Canceled Successfully');
@@ -291,4 +279,4 @@ let Delete = async (req, res) => {
 }
 
 
-module.exports = { Jobs, Create, View, Update, InProgress, PendingPayment, Closed, LeadLost, DealCancelled, Delete };
+module.exports = { Jobs, Create, View, Update, PendingPayment, Closed, LeadLost, DealCancelled, Delete };

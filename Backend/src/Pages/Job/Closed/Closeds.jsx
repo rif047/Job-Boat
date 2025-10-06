@@ -7,7 +7,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CachedIcon from '@mui/icons-material/Cached';
 
-export default function Closeds() {
+export default function Closed() {
     document.title = 'Closed Jobs';
 
     const EndPoint = 'jobs';
@@ -74,13 +74,13 @@ export default function Closeds() {
 
 
     const columns = [
-        { key: "date", accessorKey: 'owner', header: 'Date' },
+        { key: "date", accessorKey: 'date', header: 'Date', maxSize: 80 },
         { key: "owner", accessorKey: 'owner', header: 'Owner' },
+        { key: "employee", accessorKey: 'employee', header: 'Employee' },
         { key: "position", accessorKey: 'position', header: 'Position' },
         { key: "city", accessorKey: 'city', header: 'City' },
-        { key: "wages", accessorFn: row => `${row.wages} £`, header: 'Wage', maxSize: 60 },
-        { key: "charge", accessorFn: row => `${row.wages} £`, header: 'Charge', maxSize: 60 },
-        { key: "accommodation", accessorKey: 'accommodation', header: 'Accom', maxSize: 60 },
+        { key: "wages", accessorFn: row => `£${row.wages}`, header: 'Wage', maxSize: 60 },
+        { key: "fee", accessorFn: row => `£${row.fee}`, header: 'Fees', maxSize: 60 },
         { key: "agent", accessorKey: 'agent', header: 'agent', maxSize: 80 },
     ];
 
@@ -88,7 +88,7 @@ export default function Closeds() {
         <Layout>
             <ToastContainer position="bottom-right" autoClose={2000} />
 
-            <section className="flex justify-between px-5 py-2 bg-[#1664c5]">
+            <section className="flex justify-between px-5 py-2 bg-[#4ea863]">
                 <div className='flex justify-center items-center'>
                     <h1 className="font-bold text-sm md:text-lg text-white mr-2">Closed Jobs</h1>
 

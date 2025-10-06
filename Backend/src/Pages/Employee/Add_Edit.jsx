@@ -78,7 +78,7 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
             onClose();
         } catch (error) {
             const backendErrors = error.response?.data || {};
-            toast.error('Failed to update data.');
+            toast.error(error.response?.data || "Failed to submit data.");
             setErrors({
                 ...backendErrors.includes?.('Phone number already exists') && { phone: 'Phone number already exists.' }
             });
@@ -88,7 +88,7 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
     };
 
     return (
-        <Modal open={open} onClose={onClose}>
+        <Modal open={open}>
             <Box sx={modalStyle} className='max-h-[90vh]'>
                 <Box display="flex" justifyContent="space-between" mb={1}>
                     <Typography className='!font-bold' variant="h6">{data ? 'Update Data' : 'Create New'}</Typography>
@@ -124,57 +124,86 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
                 ))}
 
 
-                <TextField
-                    select
-                    label="Experience*"
-                    name="experience"
+                <Autocomplete
                     fullWidth
-                    margin="normal"
                     size="small"
-                    value={formData.experience || ''}
-                    onChange={handleChange}
-                    error={!!errors.experience}
-                    helperText={errors.experience}
-                >
-                    {[
-                        "No Experience", "1 - 6 Months", "7 - 12 Months", "1 Year", "2 - 3 Years", "4 - 5 Years", "6 - 7 Years", "8 - 9 Years", "10+ Years",
-                    ].map(exp => <MenuItem key={exp} value={exp}>{exp}</MenuItem>)}
-                </TextField>
+                    options={[
+                        "No Experience",
+                        "1 - 6 Months",
+                        "7 - 12 Months",
+                        "1 Year",
+                        "2 - 3 Years",
+                        "4 - 5 Years",
+                        "6 - 7 Years",
+                        "8 - 9 Years",
+                        "10+ Years",
+                    ]}
+                    value={formData.experience || null}
+                    onChange={(e, newVal) =>
+                        setFormData((prev) => ({ ...prev, experience: newVal || "" }))
+                    }
+                    autoHighlight
+                    selectOnFocus
+                    clearOnBlur
+                    handleHomeEndKeys
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Experience*"
+                            margin="normal"
+                            error={!!errors.experience}
+                            helperText={errors.experience}
+                        />
+                    )}
+                />
 
-
-                <TextField
-                    select
-                    label="Right To Work*"
-                    name="right_to_work"
+                <Autocomplete
                     fullWidth
-                    margin="normal"
                     size="small"
-                    value={formData.right_to_work || ''}
-                    onChange={handleChange}
-                    error={!!errors.right_to_work}
-                    helperText={errors.right_to_work}
-                >
-                    <MenuItem value="Yes">Yes</MenuItem>
-                    <MenuItem value="No">No</MenuItem>
-                </TextField>
+                    options={["Yes", "No"]}
+                    value={formData.right_to_work || null}
+                    onChange={(e, newVal) =>
+                        setFormData((prev) => ({ ...prev, right_to_work: newVal || "" }))
+                    }
+                    autoHighlight
+                    selectOnFocus
+                    clearOnBlur
+                    handleHomeEndKeys
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Right To Work*"
+                            margin="normal"
+                            error={!!errors.right_to_work}
+                            helperText={errors.right_to_work}
+                        />
+                    )}
+                />
 
-
-                <TextField
-                    select
-                    label="Availability*"
-                    name="availability"
+                <Autocomplete
                     fullWidth
-                    margin="normal"
                     size="small"
-                    value={formData.availability || ''}
-                    onChange={handleChange}
-                    error={!!errors.availability}
-                    helperText={errors.availability}
-                >
-                    <MenuItem value="Full-Time">Full-Time</MenuItem>
-                    <MenuItem value="Part-Time">Part-Time</MenuItem>
-                    <MenuItem value="Not Available">Not Available</MenuItem>
-                </TextField>
+                    options={["Full-Time", "Part-Time", "Not Available"]}
+                    value={formData.availability || null}
+                    onChange={(e, newVal) =>
+                        setFormData((prev) => ({ ...prev, availability: newVal || "" }))
+                    }
+                    autoHighlight
+                    selectOnFocus
+                    clearOnBlur
+                    handleHomeEndKeys
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Availability*"
+                            margin="normal"
+                            error={!!errors.availability}
+                            helperText={errors.availability}
+                        />
+                    )}
+                />
+
+
 
 
                 <Autocomplete
@@ -218,7 +247,7 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
                     variant="contained"
                     onClick={handleSubmit}
                     disabled={loading}
-                    className='!bg-[#1664c5] !font-bold'
+                    className='!bg-[#4ea863] !font-bold'
                 >
                     {data ? 'Update' : 'Create'}
                 </Button>

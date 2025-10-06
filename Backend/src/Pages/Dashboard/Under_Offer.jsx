@@ -34,7 +34,7 @@ export default function Under_Offer() {
 
     return (
         <div className="">
-            <h2 className="font-bold bg-[#1664c5] px-3 py-3 text-gray-200 rounded-t-lg">Under Offer Jobs: {total}</h2>
+            <h2 className="font-bold bg-[#4ea863] px-3 py-3 text-gray-200 rounded-t-lg">Under Offer Jobs: {total}</h2>
             <div className='p-6'>
                 <h3 className="mb-6 text-gray-700">Recent Under Offer Jobs:</h3>
 

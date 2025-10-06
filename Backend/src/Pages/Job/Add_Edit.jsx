@@ -37,6 +37,8 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
         right_to_work: "",
         agent: "",
         remark: "",
+        source: "",
+        source_link: "",
     });
     const [ownerModalOpen, setOwnerModalOpen] = useState(false);
 
@@ -72,6 +74,7 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
         if (!formData.city) newErrors.city = "City is required.";
         if (!formData.owner) newErrors.owner = "Owner is required.";
         if (!formData.agent) newErrors.agent = "Agent is required.";
+        if (!formData.source) newErrors.source = "Source is required.";
         if (formData.wages && isNaN(parseFloat(formData.wages))) { newErrors.wages = "Wage must be a number."; }
 
         setErrors(newErrors);
@@ -103,7 +106,11 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
             refreshData();
             onClose();
         } catch (error) {
+            const backendErrors = error.response?.data || {};
             toast.error(error.response?.data || "Failed to submit data.");
+            setErrors({
+                ...backendErrors.includes?.('Source link already exists') && { source_link: 'Source link already exists.' }
+            });
         } finally {
             setLoading(false);
         }
@@ -111,7 +118,7 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
 
     return (
         <>
-            <Modal open={open} onClose={onClose}>
+            <Modal open={open}>
                 <Box sx={modalStyle} className="max-h-[90vh]">
                     <Box display="flex" justifyContent="space-between" mb={1}>
                         <Typography className="!font-bold" variant="h6">
@@ -138,6 +145,10 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
                                     owner: newVal ? `${newVal.name} (${newVal.phone})` : "",
                                 }))
                             }
+                            autoHighlight
+                            selectOnFocus
+                            clearOnBlur
+                            handleHomeEndKeys
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -147,6 +158,7 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
                                 />
                             )}
                         />
+
                         <IconButton
                             color="primary"
                             onClick={() => setOwnerModalOpen(true)}
@@ -202,31 +214,33 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
                         helperText={errors.wages}
                     />
 
-                    <TextField
-                        select
+                    <Autocomplete
                         fullWidth
-                        label="Accommodation"
-                        name="accommodation"
                         size="small"
-                        margin="normal"
-                        value={formData.accommodation}
-                        onChange={handleChange}
-                    >
-                        <MenuItem value="Yes">Yes</MenuItem>
-                        <MenuItem value="No">No</MenuItem>
-                    </TextField>
+                        options={["Yes", "No"]}
+                        value={formData.accommodation || null}
+                        onChange={(e, newVal) =>
+                            setFormData((prev) => ({ ...prev, accommodation: newVal || "" }))
+                        }
+                        autoHighlight
+                        selectOnFocus
+                        clearOnBlur
+                        handleHomeEndKeys
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Accommodation"
+                                margin="normal"
+                                error={!!errors.accommodation}
+                                helperText={errors.accommodation}
+                            />
+                        )}
+                    />
 
-                    <TextField
-                        select
+                    <Autocomplete
                         fullWidth
-                        label="Required Experience"
-                        name="required_experience"
                         size="small"
-                        margin="normal"
-                        value={formData.required_experience}
-                        onChange={handleChange}
-                    >
-                        {[
+                        options={[
                             "No Experience",
                             "1 - 6 Months",
                             "7 - 12 Months",
@@ -236,26 +250,93 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
                             "6 - 7 Years",
                             "8 - 9 Years",
                             "10+ Years",
-                        ].map((exp) => (
-                            <MenuItem key={exp} value={exp}>
-                                {exp}
-                            </MenuItem>
-                        ))}
-                    </TextField>
+                        ]}
+                        value={formData.required_experience || null}
+                        onChange={(e, newVal) =>
+                            setFormData((prev) => ({ ...prev, required_experience: newVal || "" }))
+                        }
+                        autoHighlight
+                        selectOnFocus
+                        clearOnBlur
+                        handleHomeEndKeys
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Required Experience"
+                                margin="normal"
+                                error={!!errors.required_experience}
+                                helperText={errors.required_experience}
+                            />
+                        )}
+                    />
+
+                    <Autocomplete
+                        fullWidth
+                        size="small"
+                        options={["Yes", "No"]}
+                        value={formData.right_to_work || null}
+                        onChange={(e, newVal) =>
+                            setFormData((prev) => ({ ...prev, right_to_work: newVal || "" }))
+                        }
+                        autoHighlight
+                        selectOnFocus
+                        clearOnBlur
+                        handleHomeEndKeys
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Need Right To Work?"
+                                margin="normal"
+                                error={!!errors.right_to_work}
+                                helperText={errors.right_to_work}
+                            />
+                        )}
+                    />
+
+                    <Autocomplete
+                        fullWidth
+                        size="small"
+                        options={[
+                            "Facebook",
+                            "LinkedIn",
+                            "Instagram",
+                            "TikTok",
+                            "Telegram",
+                            "Referral",
+                            "Other",
+                        ]}
+                        value={formData.source || null}
+                        onChange={(e, newVal) =>
+                            setFormData((prev) => ({ ...prev, source: newVal || "" }))
+                        }
+                        autoHighlight
+                        selectOnFocus
+                        clearOnBlur
+                        handleHomeEndKeys
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Source*"
+                                margin="normal"
+                                error={!!errors.source}
+                                helperText={errors.source}
+                            />
+                        )}
+                    />
+
+
 
                     <TextField
-                        select
                         fullWidth
-                        label="Need Right To Work?"
-                        name="right_to_work"
+                        label="Source Link"
+                        name="source_link"
                         size="small"
                         margin="normal"
-                        value={formData.right_to_work}
+                        value={formData.source_link}
                         onChange={handleChange}
-                    >
-                        <MenuItem value="Yes">Yes</MenuItem>
-                        <MenuItem value="No">No</MenuItem>
-                    </TextField>
+                        error={!!errors.source_link}
+                        helperText={errors.source_link}
+                    />
 
                     <Autocomplete
                         fullWidth
@@ -266,6 +347,10 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
                         onChange={(e, newVal) =>
                             setFormData((prev) => ({ ...prev, agent: newVal ? newVal.name : "" }))
                         }
+                        autoHighlight
+                        selectOnFocus
+                        clearOnBlur
+                        handleHomeEndKeys
                         renderInput={(params) => (
                             <TextField
                                 {...params}
@@ -276,6 +361,7 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
                         )}
                         sx={{ my: 2 }}
                     />
+
 
                     <TextField
                         fullWidth
@@ -294,7 +380,7 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
                         variant="contained"
                         onClick={handleSubmit}
                         disabled={loading}
-                        className="!bg-[#1664c5] !font-bold"
+                        className="!bg-[#4ea863] !font-bold"
                     >
                         {data ? "Update" : "Create"}
                     </Button>

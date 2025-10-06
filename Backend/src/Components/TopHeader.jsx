@@ -34,8 +34,8 @@ export default function TopMenu() {
                     </div>
 
                     <div className='flex'>
-                        <div className={showlogout ? 'flex [&>*]:mr-4 [&>*]:px-2 [&>*]:py-1 [&>*]:bg-[#1664c5] [&>*]:text-[#e5e7eb] [&>*]:rounded-md animate-fade-left' : 'hidden'}>
-                            <NavLink to={'/users'}><SettingsOutlinedIcon /> Settings</NavLink>
+                        <div className={showlogout ? 'flex [&>*]:mr-4 [&>*]:px-2 [&>*]:py-1 [&>*]:bg-[#4ea863] [&>*]:text-[#e5e7eb] [&>*]:rounded-md animate-fade-left' : 'hidden'}>
+                            <NavLink to={'/settings'}><SettingsOutlinedIcon /> Settings</NavLink>
                             <button className="cursor-pointer" onClick={handleLogout}><LogoutOutlinedIcon /> Logout</button>
                         </div>
 
@@ -50,8 +50,8 @@ export default function TopMenu() {
 
                 <SideMenu />
 
-                <div className='flex justify-between [&>*]:mx-5 [&>*]:my-4 [&>*]:px-2 [&>*]:py-1 [&>*]:bg-[#1664c5] [&>*]:text-[#e5e7eb] [&>*]:rounded-md'>
-                    <NavLink to={'/users'}><SettingsOutlinedIcon /> </NavLink>
+                <div className='flex justify-between [&>*]:mx-5 [&>*]:my-4 [&>*]:px-2 [&>*]:py-1 [&>*]:bg-[#4ea863] [&>*]:text-[#e5e7eb] [&>*]:rounded-md'>
+                    <NavLink to={'/settings'}><SettingsOutlinedIcon /> </NavLink>
                     <button onClick={handleLogout}><LogoutOutlinedIcon /> </button>
                 </div>
             </div>

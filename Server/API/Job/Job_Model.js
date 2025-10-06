@@ -2,10 +2,6 @@ const Mongoose = require('mongoose');
 
 
 
-let bdOffset = 6 * 60;
-
-
-
 const JobSchema = Mongoose.Schema({
     position: {
         type: String,
@@ -13,7 +9,8 @@ const JobSchema = Mongoose.Schema({
     },
     code: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     city: {
         type: String,
@@ -34,7 +31,10 @@ const JobSchema = Mongoose.Schema({
     wages: {
         type: Number,
     },
-    charge: {
+    fee: {
+        type: Number
+    },
+    advance_fee: {
         type: Number
     },
     accommodation: {
@@ -48,6 +48,13 @@ const JobSchema = Mongoose.Schema({
     },
     right_to_work: {
         type: String
+    },
+    source: {
+        type: String
+    },
+    source_link: {
+        type: String,
+        unique: true
     },
     status: {
         type: String

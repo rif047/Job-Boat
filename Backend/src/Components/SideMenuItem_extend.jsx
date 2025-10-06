@@ -37,7 +37,7 @@ export default function SideMenuItem() {
             <NavLink
                 to={url}
                 className={({ isActive }) =>
-                    `text-[#4f5664] flex items-center my-2 px-2 py-2 hover:bg-[#1664c6] hover:text-[#FFFFFF] hover:rounded-md ${isActive ? "bg-[#1664c6] text-[#FFFFFF] rounded-md" : ""
+                    `text-[#4f5664] flex items-center my-2 px-2 py-2 hover:bg-[#4ea863] hover:text-[#FFFFFF] hover:rounded-md ${isActive ? "bg-[#4ea863] text-[#FFFFFF] rounded-md" : ""
                     }`
                 }
             >
@@ -61,7 +61,7 @@ export default function SideMenuItem() {
                 {Menu_Item('/agents', <SupportAgentOutlinedIcon />, 'Agents')}
 
 
-                {/* <div onClick={() => setOpenExtension(!openExtension)} className="cursor-pointer flex items-center justify-between text-[#4f5664] my-2 px-2 py-2 hover:bg-[#1664c6] hover:text-[#FFFFFF] hover:rounded-md">
+                {/* <div onClick={() => setOpenExtension(!openExtension)} className="cursor-pointer flex items-center justify-between text-[#4f5664] my-2 px-2 py-2 hover:bg-[#4ea863] hover:text-[#FFFFFF] hover:rounded-md">
                     <div className="flex items-center">
                         <LocalAtmIcon />
                         <p className="ml-2">Extension</p>

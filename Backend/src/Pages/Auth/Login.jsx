@@ -41,7 +41,7 @@ export default function Login() {
 
                 <div className="flex flex-col justify-between p-10 bg-gray-900 text-white relative">
                     <div className="flex justify-between items-center rounded-xl bg-gray-800 px-6 py-3 mb-10 shadow-md">
-                        <img src="/Assets/Img/logo.png" alt="Job Boat" className="w-32" />
+                        <img src="/Assets/Img/jb.png" alt="Job Boat" className="w-32" />
                         <a href="https://jobboat.co.uk/" target="_blank" className="font-semibold text-sm flex items-center gap-1 hover:text-gray-300">
                             Visit Website <ArrowOutwardIcon fontSize="small" />
                         </a>

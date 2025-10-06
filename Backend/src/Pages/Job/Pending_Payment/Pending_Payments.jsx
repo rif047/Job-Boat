@@ -6,9 +6,12 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CachedIcon from '@mui/icons-material/Cached';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete } from '@mui/material';
 
-export default function Closeds() {
-    document.title = 'Closed Jobs';
+export default function PendingPayment() {
+    document.title = 'Pending Payments';
 
     const EndPoint = 'jobs';
 
@@ -26,6 +29,13 @@ export default function Closeds() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    const [selectedStatus, setSelectedStatus] = useState("closed");
+    const [agents, setAgents] = useState([]);
+    const [employees, setEmployees] = useState([]);
+    const [statusModalOpen, setStatusModalOpen] = useState(false);
+    const [selectedRow, setSelectedRow] = useState(null);
+    const [form, setForm] = useState({ agent: "", employee: "", fee: "", wages: "", remark: "" });
+
 
     const fetchData = async () => {
         setLoading(true);
@@ -42,6 +52,75 @@ export default function Closeds() {
             setLoading(false);
         }
     };
+
+
+    const fetchAgents = async () => {
+        try {
+            const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/agents`);
+            setAgents(res.data.reverse());
+        } catch {
+            toast.error("Failed to fetch agents");
+        }
+    };
+
+    const fetchEmployees = async () => {
+        try {
+            const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/employees`);
+            setEmployees(res.data.reverse());
+        } catch {
+            toast.error("Failed to fetch employees");
+        }
+    };
+
+
+    const handleStatusClick = async (row, type = "Closed") => {
+        setSelectedRow(row);
+        setForm({ agent: "", employee: "", fee: row.fee || "", wages: row.wages || "", remark: row.remark || "" });
+        await Promise.all([fetchAgents(), fetchEmployees()]);
+        setStatusModalOpen(true);
+        setSelectedStatus(type);
+    };
+
+    const handleStatusSubmit = async () => {
+        try {
+            const url =
+                selectedStatus === "Pending"
+                    ? `${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}/deal_cancelled/${selectedRow._id}`
+                    : `${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}/closed/${selectedRow._id}`;
+
+            await axios.patch(url, {
+                ...form,
+                status: selectedStatus,
+            });
+
+            toast.success(
+                selectedStatus === "Pending"
+                    ? "Job marked as Cancelled!"
+                    : "Job moved to next step!"
+            );
+            fetchData();
+            setStatusModalOpen(false);
+        } catch {
+            toast.error("Please complete all fields.");
+        }
+    };
+
+
+    const handleLostLead = async (row) => {
+        if (window.confirm(`Cancel Job For ${row.position.toUpperCase()}?`)) {
+            try {
+                await axios.patch(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}/deal_cancelled/${row._id}`, {
+                    ...form,
+                    status: "Pending"
+                });
+                toast.success("Job marked as Cancelled!");
+                fetchData();
+            } catch {
+                toast.error("Failed to mark as Cancelled.");
+            }
+        }
+    };
+
 
 
     const handleDelete = async (row) => {
@@ -74,23 +153,46 @@ export default function Closeds() {
 
 
     const columns = [
-        { key: "date", accessorKey: 'owner', header: 'Date' },
+        { key: "date", accessorKey: 'date', header: 'Date', maxSize: 80 },
         { key: "owner", accessorKey: 'owner', header: 'Owner' },
+        { key: "employee", accessorKey: 'employee', header: 'Employee' },
         { key: "position", accessorKey: 'position', header: 'Position' },
         { key: "city", accessorKey: 'city', header: 'City' },
-        { key: "wages", accessorFn: row => `${row.wages} £`, header: 'Wage', maxSize: 60 },
-        { key: "charge", accessorFn: row => `${row.wages} £`, header: 'Charge', maxSize: 60 },
-        { key: "accommodation", accessorKey: 'accommodation', header: 'Accom', maxSize: 60 },
+        { key: "wages", accessorFn: row => `£${row.wages}`, header: 'Wage', maxSize: 60 },
+        { key: "fee", accessorFn: row => `£${row.fee}`, header: 'Fees', maxSize: 60 },
+        { key: "advance_fee", accessorFn: row => `£${row.advance_fee}`, header: 'Advance', maxSize: 60 },
         { key: "agent", accessorKey: 'agent', header: 'agent', maxSize: 80 },
+        {
+            key: "actions", header: 'Set Status', maxSize: 50,
+            Cell: ({ row }) => (
+                <div className='flex'>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleStatusClick(row.original, "Closed"); }}
+                        className="text-green-600 font-bold flex items-center cursor-pointer border-r-2 pr-2">
+                        <span className="text-xs mr-1 text-center ">Close</span>
+                        <TaskAltIcon fontSize="small" />
+                    </button>
+
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleLostLead(row.original); }}
+                        className="text-red-400 font-bold flex items-center cursor-pointer ml-3">
+                        <span className="text-xs mr-1 text-center ">Cancel</span>
+                        <HighlightOffIcon fontSize="small" />
+                    </button>
+
+
+                </div>
+            )
+        }
     ];
 
     return (
         <Layout>
             <ToastContainer position="bottom-right" autoClose={2000} />
 
-            <section className="flex justify-between px-5 py-2 bg-[#1664c5]">
+            <section className="flex justify-between px-5 py-2 bg-[#4ea863]">
                 <div className='flex justify-center items-center'>
-                    <h1 className="font-bold text-sm md:text-lg text-white mr-2">Payment Pending</h1>
+                    <h1 className="font-bold text-sm md:text-lg text-white mr-2">Pending Payments</h1>
 
                     {loading ? (
                         <div className="flex justify-center items-center text-white">
@@ -143,6 +245,90 @@ export default function Closeds() {
                     viewData={viewData}
                 />
             )}
+
+            <Dialog open={statusModalOpen} onClose={() => setStatusModalOpen(false)} maxWidth='xs'>
+                <DialogTitle><b>Close Deal</b></DialogTitle>
+
+                <DialogContent>
+                    <Autocomplete
+                        fullWidth
+                        size="small"
+                        options={employees}
+                        getOptionLabel={o => `${o.name} (${o.phone})`}
+                        value={employees.find(emp => `${emp.name} (${emp.phone})` === form.employee) || null}
+                        onChange={(e, v) => setForm({ ...form, employee: v ? `${v.name} (${v.phone})` : "" })}
+                        autoHighlight
+                        selectOnFocus
+                        clearOnBlur
+                        handleHomeEndKeys
+                        renderInput={p => (
+                            <TextField
+                                {...p}
+                                label="Select Employee*"
+                                margin="normal"
+                            />
+                        )}
+                    />
+
+                    <TextField
+                        fullWidth
+                        size="small"
+                        margin="normal"
+                        label="Final Fees*"
+                        value={form.fee}
+                        onChange={e => setForm({ ...form, fee: e.target.value })}
+                    />
+
+                    <TextField
+                        fullWidth
+                        size="small"
+                        margin="normal"
+                        label="Wages*"
+                        value={form.wages}
+                        onChange={e => setForm({ ...form, wages: e.target.value })}
+                    />
+
+
+                    <Autocomplete
+                        fullWidth
+                        size="small"
+                        options={agents}
+                        getOptionLabel={o => `${o.name}`}
+                        value={agents.find(a => `${a.name}` === form.agent) || null}
+                        onChange={(e, v) => setForm({ ...form, agent: v ? `${v.name}` : "" })}
+                        autoHighlight
+                        selectOnFocus
+                        clearOnBlur
+                        handleHomeEndKeys
+                        renderInput={p => (
+                            <TextField
+                                {...p}
+                                label="Select Agent*"
+                                margin="normal"
+                            />
+                        )}
+                    />
+
+                    <TextField
+                        fullWidth
+                        label="Remark"
+                        size="small"
+                        margin="normal"
+                        multiline
+                        minRows={4}
+                        value={form.remark}
+                        onChange={e => setForm({ ...form, remark: e.target.value })}
+                    />
+
+
+                </DialogContent>
+                <small className='text-gray-600 mx-auto my-2'>All fields are required.</small>
+                <DialogActions>
+                    <Button fullWidth variant="contained" onClick={handleStatusSubmit} className="!bg-green-700 !font-bold">
+                        Submit
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Layout>
     );
 }

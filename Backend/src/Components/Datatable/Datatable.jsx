@@ -56,19 +56,19 @@ export default function Datatable({ columns, data, onEdit, onView, onDelete, per
             Cell: ({ row }) => (
                 <div className="space-x-2">
                     {permissions.canView && (
-                        <button className="actionBtn cursor-pointer px-2 py-1 rounded hover:shadow-2xl bg-slate-100 [&>svg]:w-[15px] hover:bg-slate-300" onClick={() => onView(row.original)} >
+                        <button className="actionBtn cursor-pointer px-[8px] py-[2px] rounded hover:shadow-2xl bg-slate-100 [&>svg]:w-[15px] hover:bg-slate-300" onClick={() => onView(row.original)} >
                             <VisibilityIcon />
                         </button>
                     )}
 
                     {permissions.canEdit && (
-                        <button className="actionBtn cursor-pointer px-2 py-1 rounded hover:shadow-2xl bg-orange-50 [&>svg]:w-[15px] hover:bg-orange-300" onClick={() => onEdit(row.original)}  >
+                        <button className="actionBtn cursor-pointer px-[8px] py-[2px] rounded hover:shadow-2xl bg-orange-50 [&>svg]:w-[15px] hover:bg-orange-300" onClick={() => onEdit(row.original)}  >
                             <EditIcon />
                         </button>
                     )}
 
                     {permissions.canDelete && (
-                        <button className="actionBtn cursor-pointer px-2 py-1 rounded hover:shadow-2xl text-red-400 bg-red-50 [&>svg]:w-[15px] hover:bg-red-300" onClick={() => onDelete(row.original)} >
+                        <button className="actionBtn cursor-pointer px-[8px] py-[2px] rounded hover:shadow-2xl text-red-400 bg-red-50 [&>svg]:w-[15px] hover:bg-red-300" onClick={() => onDelete(row.original)} >
                             <DeleteIcon />
                         </button>
                     )}

@@ -67,3 +67,7 @@
 .css-10gei56 {
     margin-top: 20px;
 }
+
+.MuiTableCell-root .MuiTableCell-body .MuiTableCell-alignLeft .MuiTableCell-sizeMedium {
+    border: 1px solid #F0F0F0 !important;
+}

@@ -16,7 +16,7 @@ export default function Users() {
     const userPermissions = {
         canEdit: true,
         canView: true,
-        canDelete: false,
+        canDelete: true,
     };
 
 
@@ -104,7 +104,7 @@ export default function Users() {
         <Layout>
             <ToastContainer position="bottom-right" autoClose={2000} />
 
-            <section className="flex justify-between px-5 py-2 bg-[#1664c5]">
+            <section className="flex justify-between px-5 py-2 bg-[#4ea863]">
                 <div className='flex justify-center items-center'>
                     <h1 className="font-bold text-sm md:text-lg text-white mr-2">User List</h1>
 

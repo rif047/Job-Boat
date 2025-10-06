@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, Typography, Modal, TextField, MenuItem, IconButton } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
+import { Box, Button, Typography, Modal, TextField, MenuItem, IconButton, InputAdornment } from '@mui/material';
+import { Visibility, VisibilityOff, Close as CloseIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
@@ -24,6 +24,12 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
+    const togglePasswordVisibility = () => {
+        setShowPassword((prev) => !prev);
+    };
+
 
     useEffect(() => {
         if (data) {
@@ -95,7 +101,7 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
     };
 
     return (
-        <Modal open={open} onClose={onClose}>
+        <Modal open={open}>
             <Box sx={modalStyle} className='max-h-[90vh]'>
                 <Box display="flex" justifyContent="space-between" mb={1}>
                     <Typography className='!font-bold' variant="h6">{data ? 'Update Data' : 'Create New'} </Typography>
@@ -126,8 +132,6 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
                     { name: 'phone', label: 'Phone*' },
                     { name: 'email', label: 'Email*' },
                     { name: 'username', label: 'Username*' },
-                    { name: 'password', label: data ? 'New Password' : 'Password*', type: 'password' },
-                    { name: 'answer', label: 'Set a Secret Word*' },
                 ].map(({ name, label, type = 'text' }) => (
                     <TextField
                         key={name}
@@ -143,9 +147,51 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
                         helperText={errors[name]}
                     />
                 ))}
+
+
+                <TextField
+                    key="password"
+                    name="password"
+                    label={data ? 'New Password' : 'Password*'}
+                    type={showPassword ? 'text' : 'password'}
+                    fullWidth
+                    margin="normal"
+                    size="small"
+                    value={formData.password || ''}
+                    onChange={handleChange}
+                    error={!!errors.password}
+                    helperText={errors.password}
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <IconButton onClick={togglePasswordVisibility} edge="end">
+                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    }}
+                />
+
+
+                <TextField
+                    fullWidth
+                    label="Set a Secret Word*"
+                    name="answer"
+                    size="small"
+                    margin="normal"
+                    value={formData.answer}
+                    onChange={handleChange}
+                    error={!!errors.answer}
+                    helperText={errors.answer}
+                />
+
                 <small className='text-gray-600 ml-2'>You'll need this to recover your password.</small>
 
-                <Button fullWidth variant="contained" sx={{ mt: 2 }} onClick={handleSubmit} disabled={loading} className='!bg-[#1664c5] !font-bold'>
+
+
+
+
+                <Button fullWidth variant="contained" sx={{ mt: 2 }} onClick={handleSubmit} disabled={loading} className='!bg-[#4ea863] !font-bold'>
                     {data ? 'Update' : 'Create'}
                 </Button>
             </Box>

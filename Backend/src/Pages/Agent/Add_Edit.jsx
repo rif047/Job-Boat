@@ -75,7 +75,7 @@ export default function AddEditAgent({ open, onClose, data, refreshData }) {
 
 
     return (
-        <Modal open={open} onClose={onClose}>
+        <Modal open={open}>
             <Box sx={modalStyle} className='max-h-[90vh]'>
                 <Box display="flex" justifyContent="space-between" mb={1}>
                     <Typography className='!font-bold' variant="h6">{data ? 'Update Data' : 'Create New'} </Typography>
@@ -118,7 +118,7 @@ export default function AddEditAgent({ open, onClose, data, refreshData }) {
 
 
 
-                <Button fullWidth variant="contained" sx={{ mt: 2 }} onClick={handleSubmit} disabled={loading} className='!bg-[#1664c5] !font-bold'>
+                <Button fullWidth variant="contained" sx={{ mt: 2 }} onClick={handleSubmit} disabled={loading} className='!bg-[#4ea863] !font-bold'>
                     {data ? 'Update' : 'Create'}
                 </Button>
             </Box>
