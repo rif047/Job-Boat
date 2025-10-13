@@ -23,7 +23,6 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
     const EndPoint = "jobs";
 
     const [errors, setErrors] = useState({});
-    const [agents, setAgents] = useState([]);
     const [owners, setOwners] = useState([]);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -43,9 +42,6 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
     const [ownerModalOpen, setOwnerModalOpen] = useState(false);
 
 
-    const capitalizeWords = (str) => str ? str.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ") : "";
-
-
     const fetchOwners = async () => {
         try {
             const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/owners`);
@@ -57,16 +53,19 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
 
 
     useEffect(() => {
+        const loggedUser = JSON.parse(localStorage.getItem('user'));
+
         if (data) {
-            setFormData((prev) => ({ ...prev, ...data }));
+            setFormData((prev) => ({ ...prev, ...data, agent: data.agent || loggedUser?.name }));
+        } else {
+            setFormData({ agent: loggedUser?.name || '' });
         }
 
         setErrors({});
 
-        axios.get(`${import.meta.env.VITE_SERVER_URL}/api/agents`).then((res) => setAgents(res.data)).catch(() => toast.error("Failed to fetch agents."));
-
-        fetchOwners();
+        fetchOwners && fetchOwners();
     }, [data]);
+
 
     const validate = () => {
         const newErrors = {};
@@ -338,30 +337,6 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
                         helperText={errors.source_link}
                     />
 
-                    <Autocomplete
-                        fullWidth
-                        size="small"
-                        options={agents}
-                        getOptionLabel={(option) => capitalizeWords(option.name)}
-                        value={agents.find((a) => a.name === formData.agent) || null}
-                        onChange={(e, newVal) =>
-                            setFormData((prev) => ({ ...prev, agent: newVal ? newVal.name : "" }))
-                        }
-                        autoHighlight
-                        selectOnFocus
-                        clearOnBlur
-                        handleHomeEndKeys
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Agent*"
-                                error={!!errors.agent}
-                                helperText={errors.agent}
-                            />
-                        )}
-                        sx={{ my: 2 }}
-                    />
-
 
                     <TextField
                         fullWidth
@@ -380,7 +355,7 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
                         variant="contained"
                         onClick={handleSubmit}
                         disabled={loading}
-                        className="!bg-[#4ea863] !font-bold"
+                        className="!bg-[#4ea863] hover:!bg-green-700 !font-bold"
                     >
                         {data ? "Update" : "Create"}
                     </Button>

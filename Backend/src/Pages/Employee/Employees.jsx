@@ -7,6 +7,8 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CachedIcon from '@mui/icons-material/Cached';
+import * as XLSX from 'xlsx';
+
 
 export default function Employees() {
     document.title = 'Employees';
@@ -77,6 +79,58 @@ export default function Employees() {
 
 
 
+    const handleExcelImport = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setLoading(true);
+
+            const reader = new FileReader();
+
+            reader.onload = async (evt) => {
+                const binaryStr = evt.target.result;
+                const workbook = XLSX.read(binaryStr, { type: 'binary' });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+                if (!jsonData.length) { toast.error("Excel file is empty or invalid."); setLoading(false); return; }
+
+                const formattedData = jsonData.map((row) => ({
+                    agent: row.agent || row.Agent || "Imported",
+                    name: row.name || row.Name,
+                    phone: row.phone || row.Phone,
+                    alt_phone: row.alt_phone || row["Alternative Phone"] || "",
+                    address: row.address || row.Address,
+                    city: row.city || row.City,
+                    preferred_location: row.preferred_location || row["Preferred Location"] || "",
+                    availability: row.availability || row.Availability,
+                    experience: row.experience || row.Experience,
+                    position: row.position || row.Position,
+                    right_to_work: row.right_to_work || row["Right to Work"],
+                    remark: row.remark || row.Remark || "",
+                }));
+
+                await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}/bulk`, formattedData);
+
+                toast.success("Data imported successfully!");
+                fetchData();
+            };
+
+            reader.readAsBinaryString(file);
+        } catch (error) {
+            console.error("Import error:", error);
+            toast.error("Failed to import data. Please check the file format.");
+        } finally {
+            setLoading(false);
+            e.target.value = "";
+        }
+    };
+
+
+
+
     const columns = [
         { accessorKey: 'name', header: 'Employee Name' },
         { accessorKey: 'phone', header: 'Phone', enableClickToCopy: true, },
@@ -106,7 +160,8 @@ export default function Employees() {
         <Layout>
             <ToastContainer position="bottom-right" autoClose={2000} />
 
-            <section className="flex justify-between px-5 py-2 bg-[#4ea863]">
+            <section className="flex justify-between px-1 md:px-4 py-2 bg-[#4ea863]">
+
                 <div className='flex justify-center items-center'>
                     <h1 className="font-bold text-sm md:text-lg text-white mr-2">Employee List</h1>
 
@@ -124,12 +179,31 @@ export default function Employees() {
                     </span>
 
                 </div>
-                <button
-                    onClick={handleAdd}
-                    className="bg-[#FFFFFF] text-gray-800 px-6 py-1 rounded-md font-bold text-sm hover:bg-gray-200 cursor-pointer"
-                >
-                    Create +
-                </button>
+
+                <div className="flex gap-3 items-center">
+                    <button
+                        onClick={() => document.getElementById('importExcelInput').click()}
+                        className="flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-xl font-semibold text-sm shadow-sm border border-gray-200 hover:bg-gray-100 hover:shadow transition-all duration-200 cursor-pointer"
+                    >
+                        📥 Import
+                    </button>
+
+                    <input
+                        id="importExcelInput"
+                        type="file"
+                        accept=".xlsx, .xls"
+                        className="hidden"
+                        onChange={handleExcelImport}
+                    />
+
+                    <button
+                        onClick={handleAdd}
+                        className="flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-xl font-semibold text-sm shadow-sm border border-gray-200 hover:bg-gray-100 hover:shadow transition-all duration-200 cursor-pointer"
+                    >
+                        Create +
+                    </button>
+                </div>
+
             </section>
 
             <section>

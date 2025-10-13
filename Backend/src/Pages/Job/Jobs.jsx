@@ -32,7 +32,6 @@ export default function Jobs() {
     const [loading, setLoading] = useState(false);
 
     const [selectedStatus, setSelectedStatus] = useState("PendingPayment");
-    const [agents, setAgents] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [statusModalOpen, setStatusModalOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState(null);
@@ -57,15 +56,6 @@ export default function Jobs() {
     };
 
 
-    const fetchAgents = async () => {
-        try {
-            const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/agents`);
-            setAgents(res.data.reverse());
-        } catch {
-            toast.error("Failed to fetch agents");
-        }
-    };
-
     const fetchEmployees = async () => {
         try {
             const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/employees`);
@@ -77,23 +67,41 @@ export default function Jobs() {
 
 
     const handleStatusClick = async (row, type = "PendingPayment") => {
+        const loggedUser = JSON.parse(localStorage.getItem('user'));
         setSelectedRow(row);
-        setForm({ agent: "", employee: "", advance_fee: "", fee: row.fee || "", wages: row.wages || "", remark: row.remark || "" });
-        await Promise.all([fetchAgents(), fetchEmployees()]);
+
+        setForm({
+            agent: loggedUser?.name || "",
+            employee: "",
+            advance_fee: "",
+            fee: row.fee || "",
+            wages: row.wages || "",
+            remark: row.remark || ""
+        });
+
+        await fetchEmployees();
         setStatusModalOpen(true);
         setSelectedStatus(type);
     };
 
 
-
-
     const handleCloseJob = async (row) => {
+        const loggedUser = JSON.parse(localStorage.getItem('user'));
         setSelectedRow(row);
-        setForm({ agent: "", employee: "", fee: row.fee || "", wages: row.wages || "", remark: row.remark || "" });
-        await Promise.all([fetchAgents(), fetchEmployees()]);
+
+        setForm({
+            agent: loggedUser?.name || "",
+            employee: "",
+            fee: row.fee || "",
+            wages: row.wages || "",
+            remark: row.remark || ""
+        });
+
+        await fetchEmployees();
         setStatusModalOpen(true);
         setSelectedStatus("Closed");
     };
+
 
     const handleStatusSubmit = async () => {
         try {
@@ -212,7 +220,7 @@ export default function Jobs() {
         <Layout>
             <ToastContainer position="bottom-right" autoClose={2000} />
 
-            <section className="flex justify-between px-5 py-2 bg-[#4ea863]">
+            <section className="flex justify-between px-1 md:px-4 py-2 bg-[#4ea863] shadow-2xs">
                 <div className='flex justify-center items-center'>
                     <h1 className="font-bold text-sm md:text-lg text-white mr-2">Hot Leads</h1>
 
@@ -232,7 +240,7 @@ export default function Jobs() {
                 </div>
                 <button
                     onClick={handleAdd}
-                    className="bg-[#FFFFFF] text-gray-800 px-6 py-1 rounded-md font-bold text-sm hover:bg-gray-200 cursor-pointer"
+                    className="flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-xl font-semibold text-sm shadow-sm border border-gray-200 hover:bg-gray-100 hover:shadow transition-all duration-200 cursor-pointer"
                 >
                     Create +
                 </button>
@@ -273,8 +281,6 @@ export default function Jobs() {
                     viewData={viewData}
                 />
             )}
-
-
 
 
 
@@ -323,7 +329,7 @@ export default function Jobs() {
                             fullWidth
                             size="small"
                             margin="normal"
-                            label="Advance Fees"
+                            label="Advance Paid*"
                             value={form.advance_fee}
                             onChange={e => setForm({ ...form, advance_fee: e.target.value })}
                         />
@@ -336,26 +342,6 @@ export default function Jobs() {
                         label="Wages*"
                         value={form.wages}
                         onChange={e => setForm({ ...form, wages: e.target.value })}
-                    />
-
-                    <Autocomplete
-                        fullWidth
-                        size="small"
-                        options={agents}
-                        getOptionLabel={o => `${o.name}`}
-                        value={agents.find(a => `${a.name}` === form.agent) || null}
-                        onChange={(e, v) => setForm({ ...form, agent: v ? `${v.name}` : "" })}
-                        autoHighlight
-                        selectOnFocus
-                        clearOnBlur
-                        handleHomeEndKeys
-                        renderInput={p => (
-                            <TextField
-                                {...p}
-                                label="Select Agent*"
-                                margin="normal"
-                            />
-                        )}
                     />
 
                     <TextField
@@ -374,7 +360,7 @@ export default function Jobs() {
                 <small className='text-gray-600 mx-auto my-2'>All fields are required.</small>
 
                 <DialogActions>
-                    <Button fullWidth variant="contained" onClick={handleStatusSubmit} className="!bg-green-700 !font-bold">
+                    <Button fullWidth variant="contained" onClick={handleStatusSubmit} className="!bg-[#4ea863] hover:!bg-green-700 !font-bold">
                         Submit
                     </Button>
                 </DialogActions>

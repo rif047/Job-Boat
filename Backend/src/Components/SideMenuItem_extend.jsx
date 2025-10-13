@@ -77,7 +77,7 @@ export default function SideMenuItem() {
                     </div>
                 )} */}
 
-                {userType !== "Operator" && (
+                {userType !== "Agent" && (
                     <>
                         {Menu_Item('/users', <SupervisedUserCircleOutlinedIcon />, 'Users')}
                         {Menu_Item('/settings', <SettingsOutlinedIcon />, 'Settings')}

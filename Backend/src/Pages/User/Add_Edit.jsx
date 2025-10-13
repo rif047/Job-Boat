@@ -43,15 +43,17 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
 
     const validate = () => {
         const newErrors = {};
-        const { name, phone, username, email, password, userType, answer } = formData;
+        const { name, phone, username, email, password, userType, secret_code, designation, remark } = formData;
 
         if (!name) newErrors.name = 'Name is required.';
         if (!phone) newErrors.phone = 'Phone is required.';
         if (!username) newErrors.username = 'Username is required.';
         if (!email) newErrors.email = 'Email is required.';
+        if (!designation) newErrors.designation = 'Designation is required.';
         if (!data && !password) newErrors.password = 'Password is required.';
-        if (!answer) newErrors.answer = 'Secret Word is required.';
+        if (!secret_code) newErrors.secret_code = 'Secret Word is required.';
         if (!userType) newErrors.userType = 'User Type is required.';
+
 
         if (!/^\d+$/.test(phone || '')) newErrors.phone = 'Phone number must contain numbers.';
         if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { newErrors.email = 'Already exist || Invalid email address' }
@@ -124,13 +126,14 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
                     helperText={errors.userType}
                 >
                     <MenuItem value="Admin">Admin</MenuItem>
-                    <MenuItem value="Operator">Operator</MenuItem>
+                    <MenuItem value="Agent">Agent</MenuItem>
                 </TextField>
 
                 {[
                     { name: 'name', label: 'Name*' },
                     { name: 'phone', label: 'Phone*' },
                     { name: 'email', label: 'Email*' },
+                    { name: 'designation', label: 'Designation*' },
                     { name: 'username', label: 'Username*' },
                 ].map(({ name, label, type = 'text' }) => (
                     <TextField
@@ -176,22 +179,34 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
                 <TextField
                     fullWidth
                     label="Set a Secret Word*"
-                    name="answer"
+                    name="secret_code"
                     size="small"
                     margin="normal"
-                    value={formData.answer}
+                    value={formData.secret_code}
                     onChange={handleChange}
-                    error={!!errors.answer}
-                    helperText={errors.answer}
+                    error={!!errors.secret_code}
+                    helperText={errors.secret_code}
                 />
 
                 <small className='text-gray-600 ml-2'>You'll need this to recover your password.</small>
 
+                <TextField
+                    fullWidth
+                    label="Remark"
+                    name="remark"
+                    size="small"
+                    margin="normal"
+                    multiline
+                    minRows={4}
+                    value={formData.remark}
+                    onChange={handleChange}
+                />
 
 
 
 
-                <Button fullWidth variant="contained" sx={{ mt: 2 }} onClick={handleSubmit} disabled={loading} className='!bg-[#4ea863] !font-bold'>
+
+                <Button fullWidth variant="contained" sx={{ mt: 2 }} onClick={handleSubmit} disabled={loading} className='!bg-[#4ea863] hover:!bg-green-700 !font-bold'>
                     {data ? 'Update' : 'Create'}
                 </Button>
             </Box>

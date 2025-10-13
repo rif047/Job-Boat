@@ -13,14 +13,15 @@ let Users = async (req, res) => {
 
 let Create = async (req, res) => {
     try {
-        let { name, phone, username, userType, email, password, answer } = req.body;
+        let { name, phone, username, userType, email, password, secret_code, designation, remark } = req.body;
 
         if (!name) { return res.status(400).send('Name is required!'); }
         if (!phone) { return res.status(400).send('Phone is required!'); }
         if (!username) { return res.status(400).send('Username is required!'); }
         if (!email) { return res.status(400).send('Email is required!'); }
         if (!password) { return res.status(400).send('Password is required!'); }
-        if (!answer) { return res.status(400).send('Answer is required!'); }
+        if (!secret_code) { return res.status(400).send('Secret Code is required!'); }
+        if (!designation) { return res.status(400).send('Designation is required!'); }
 
 
         let checkUserName = await User.findOne({ username });
@@ -39,10 +40,12 @@ let Create = async (req, res) => {
             name,
             phone,
             userType,
+            designation,
+            remark,
             username: username.toLowerCase(),
             email: email.toLowerCase(),
             password: hashPassword,
-            answer: answer.toLowerCase()
+            secret_code: secret_code.toLowerCase()
         });
 
         await newData.save();
@@ -70,13 +73,14 @@ let View = async (req, res) => {
 
 let Update = async (req, res) => {
     try {
-        let { name, phone, username, userType, email, password, answer } = req.body;
+        let { name, phone, username, userType, email, password, secret_code, designation, remark } = req.body;
 
         if (!name) { return res.status(400).send('Name is required!'); }
         if (!phone) { return res.status(400).send('Phone is required!'); }
         if (!username) { return res.status(400).send('Username is required!'); }
         if (!email) { return res.status(400).send('Email is required!'); }
-        if (!answer) { return res.status(400).send('Answer is required!'); }
+        if (!secret_code) { return res.status(400).send('Secret Code is required!'); }
+        if (!designation) { return res.status(400).send('Designation is required!'); }
 
         let checkUserName = await User.findOne({ username: username, _id: { $ne: req.params.id } });
         if (checkUserName) { return res.status(400).send('Username already exists. Use different one.'); }
@@ -92,9 +96,11 @@ let Update = async (req, res) => {
         updateData.name = name;
         updateData.phone = phone;
         updateData.userType = userType;
+        updateData.designation = designation;
+        updateData.remark = remark;
         updateData.username = username.toLowerCase();
         updateData.email = email.toLowerCase();
-        updateData.answer = answer.toLowerCase();
+        updateData.secret_code = secret_code.toLowerCase();
 
         if (password) {
             let hashPassword = await bcrypt.hash(password, 10);

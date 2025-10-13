@@ -9,7 +9,7 @@ import './MUI.css';
 
 export default function Datatable({ columns, data, onEdit, onView, onDelete, permissions }) {
 
-    const excludedFields = ['_id', 'answer', 'password', '__v', 'images', 'createdOn', 'status'];
+    const excludedFields = ['_id', 'secret_code', 'password', '__v', 'images', 'createdOn', 'status'];
 
     const handleExportCsv = () => {
         const filteredData = data.map(row => {

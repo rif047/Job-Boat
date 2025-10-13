@@ -59,6 +59,77 @@ let Create = async (req, res) => {
 
 
 
+let BulkImport = async (req, res) => {
+    try {
+        let employees = req.body;
+
+        if (!Array.isArray(employees) || employees.length === 0) {
+            return res.status(400).send('Invalid or empty data array.');
+        }
+
+        let validEmployees = [];
+        for (let emp of employees) {
+            const {
+                agent,
+                name,
+                phone,
+                alt_phone,
+                address,
+                city,
+                preferred_location,
+                availability,
+                experience,
+                position,
+                right_to_work,
+                remark,
+            } = emp;
+
+            if (!agent || !name || !phone || !address || !city || !availability || !experience || !position || !right_to_work) {
+                console.log(`Skipped invalid entry: ${name || 'Unnamed'}`);
+                continue;
+            }
+
+            const exists = await Employee.findOne({ phone });
+            if (exists) {
+                console.log(`⚠️ Skipped duplicate phone: ${phone}`);
+                continue;
+            }
+
+            validEmployees.push({
+                agent,
+                name,
+                phone,
+                alt_phone,
+                address,
+                city,
+                preferred_location,
+                availability,
+                experience,
+                position,
+                right_to_work,
+                remark,
+            });
+        }
+
+        if (validEmployees.length === 0) {
+            return res.status(400).send('No valid data to import.');
+        }
+
+        await Employee.insertMany(validEmployees, { ordered: false });
+        res.status(200).send(`${validEmployees.length} employees imported successfully.`);
+
+        console.log(`✅ Imported ${validEmployees.length} employees.`);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Bulk import failed.');
+    }
+};
+
+
+
+
+
+
 
 
 let View = async (req, res) => {
@@ -126,4 +197,4 @@ let Delete = async (req, res) => {
 
 
 
-module.exports = { Employees, Create, View, Update, Delete }
+module.exports = { Employees, Create, BulkImport, View, Update, Delete }

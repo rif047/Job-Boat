@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, Typography, Modal, IconButton, TextField, Autocomplete, MenuItem } from '@mui/material';
+import { Box, Button, Typography, Modal, IconButton, TextField, Autocomplete } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import axios from 'axios';
@@ -24,28 +24,24 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
-    const [agents, setAgents] = useState([]);
-
-    const capitalizeWords = (str) => { return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '); };
 
 
     useEffect(() => {
+        const loggedUser = JSON.parse(localStorage.getItem('user'));
+
         if (data) {
-            setFormData({ ...data });
+            setFormData({ ...data, agent: data.agent || loggedUser?.name });
         } else {
-            setFormData({});
+            setFormData({ agent: loggedUser?.name || '' });
         }
 
         setErrors({});
-
-        axios.get(`${import.meta.env.VITE_SERVER_URL}/api/agents`).then((res) => setAgents(res.data)).catch(() => toast.error("Failed to fetch agents."));
     }, [data]);
 
     const validate = () => {
         const newErrors = {};
-        const { agent, name, phone, address, availability, experience, position, city, right_to_work } = formData;
+        const { name, phone, address, availability, experience, position, city, right_to_work } = formData;
 
-        if (!agent) newErrors.agent = 'Agent is required.';
         if (!name) newErrors.name = 'Name is required.';
         if (!/^\d+$/.test(phone || '')) newErrors.phone = 'Phone number must contain numbers.';
         if (!address) newErrors.address = 'Address is required.';
@@ -205,27 +201,6 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
 
 
 
-
-                <Autocomplete
-                    fullWidth
-                    size="small"
-                    options={agents}
-                    margin="normal"
-                    getOptionLabel={(option) => capitalizeWords(option.name)}
-                    value={agents.find(c => c.name === formData.agent) || null}
-                    onChange={(event, newValue) => {
-                        handleChange({
-                            target: { name: "agent", value: newValue ? newValue.name : "" }
-                        });
-                    }}
-                    isOptionEqualToValue={(option, value) => option.name === value.name}
-                    renderInput={(params) => (
-                        <TextField {...params} label="Select Agent*" error={!!errors.agent} helperText={errors.agent} />
-                    )}
-                    sx={{ my: 2 }}
-                />
-
-
                 <TextField
                     fullWidth
                     label="Remark"
@@ -247,7 +222,7 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
                     variant="contained"
                     onClick={handleSubmit}
                     disabled={loading}
-                    className='!bg-[#4ea863] !font-bold'
+                    className='!bg-[#4ea863] hover:!bg-green-700 !font-bold'
                 >
                     {data ? 'Update' : 'Create'}
                 </Button>

@@ -44,6 +44,49 @@ let Create = async (req, res) => {
 
 
 
+let BulkImport = async (req, res) => {
+    try {
+        let owners = req.body;
+
+        if (!Array.isArray(owners) || owners.length === 0) {
+            return res.status(400).send('Invalid or empty data array.');
+        }
+
+        let validOwners = [];
+        for (let emp of owners) {
+            const { agent, name, phone, alt_phone, business_name, business_address, remark } = emp;
+
+            if (!agent || !name || !phone || !business_name || !business_address) {
+                console.log(`Skipped invalid entry: ${name || 'Unnamed'}`);
+                continue;
+            }
+
+            const exists = await Owner.findOne({ phone });
+            if (exists) {
+                console.log(`⚠️ Skipped duplicate phone: ${phone}`);
+                continue;
+            }
+
+            validOwners.push({ agent, name, phone, alt_phone, business_name, business_address, remark });
+        }
+
+        if (validOwners.length === 0) {
+            return res.status(400).send('No valid data to import.');
+        }
+
+        await Owner.insertMany(validOwners, { ordered: false });
+        res.status(200).send(`${validOwners.length} owners imported successfully.`);
+
+        console.log(`✅ Imported ${validOwners.length} owners.`);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Bulk import failed.');
+    }
+};
+
+
+
+
 
 
 
@@ -99,4 +142,4 @@ let Delete = async (req, res) => {
 
 
 
-module.exports = { Owners, Create, View, Update, Delete }
+module.exports = { Owners, Create, BulkImport, View, Update, Delete }

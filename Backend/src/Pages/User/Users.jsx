@@ -81,6 +81,7 @@ export default function Users() {
         { accessorKey: 'name', header: 'Name', },
         { accessorKey: 'phone', header: 'Phone', enableClickToCopy: true, },
         { accessorKey: 'email', header: 'Email' },
+        { accessorKey: 'designation', header: 'Designation' },
         { accessorKey: 'username', header: 'UserName' },
         { accessorKey: 'userType', header: 'User Type' },
     ];
@@ -104,7 +105,7 @@ export default function Users() {
         <Layout>
             <ToastContainer position="bottom-right" autoClose={2000} />
 
-            <section className="flex justify-between px-5 py-2 bg-[#4ea863]">
+            <section className="flex justify-between px-1 md:px-4 py-2 bg-[#4ea863]">
                 <div className='flex justify-center items-center'>
                     <h1 className="font-bold text-sm md:text-lg text-white mr-2">User List</h1>
 
@@ -125,7 +126,7 @@ export default function Users() {
 
                 <button
                     onClick={handleAdd}
-                    className="bg-[#FFFFFF] text-gray-800 px-6 py-1 rounded-md font-bold text-sm hover:bg-gray-200 cursor-pointer"
+                    className="flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-xl font-semibold text-sm shadow-sm border border-gray-200 hover:bg-gray-100 hover:shadow transition-all duration-200 cursor-pointer"
                 >
                     Create +
                 </button>

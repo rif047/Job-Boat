@@ -69,7 +69,7 @@ export default function MainRoutes() {
             <Route path="/owners" element={loggedIn ? <Owners handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
 
 
-            {userType !== "Operator" && (
+            {userType !== "Agent" && (
                 <>
                     <Route path="/agents" element={loggedIn ? <Agents handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
                     <Route path="/users" element={loggedIn ? <Users handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />

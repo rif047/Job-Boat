@@ -25,6 +25,10 @@ const UserSchema = Mongoose.Schema({
         type: String,
         required: true,
     },
+    designation: {
+        type: String,
+        required: true
+    },
     username: {
         type: String,
         required: true,
@@ -34,9 +38,12 @@ const UserSchema = Mongoose.Schema({
         type: String,
         required: true
     },
-    answer: {
+    secret_code: {
         type: String,
         required: true
+    },
+    remark: {
+        type: String,
     },
     createdOn: {
         type: Date,

@@ -30,7 +30,6 @@ export default function PendingPayment() {
     const [loading, setLoading] = useState(false);
 
     const [selectedStatus, setSelectedStatus] = useState("closed");
-    const [agents, setAgents] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [statusModalOpen, setStatusModalOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState(null);
@@ -54,15 +53,6 @@ export default function PendingPayment() {
     };
 
 
-    const fetchAgents = async () => {
-        try {
-            const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/agents`);
-            setAgents(res.data.reverse());
-        } catch {
-            toast.error("Failed to fetch agents");
-        }
-    };
-
     const fetchEmployees = async () => {
         try {
             const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/employees`);
@@ -74,12 +64,22 @@ export default function PendingPayment() {
 
 
     const handleStatusClick = async (row, type = "Closed") => {
+        const loggedUser = JSON.parse(localStorage.getItem('user'));
         setSelectedRow(row);
-        setForm({ agent: "", employee: "", fee: row.fee || "", wages: row.wages || "", remark: row.remark || "" });
-        await Promise.all([fetchAgents(), fetchEmployees()]);
+
+        setForm({
+            agent: loggedUser?.name || "",
+            employee: "",
+            fee: row.fee || "",
+            wages: row.wages || "",
+            remark: row.remark || ""
+        });
+
+        await fetchEmployees();
         setStatusModalOpen(true);
         setSelectedStatus(type);
     };
+
 
     const handleStatusSubmit = async () => {
         try {
@@ -190,7 +190,7 @@ export default function PendingPayment() {
         <Layout>
             <ToastContainer position="bottom-right" autoClose={2000} />
 
-            <section className="flex justify-between px-5 py-2 bg-[#4ea863]">
+            <section className="flex justify-between px-1 md:px-4 py-2 bg-[#4ea863]">
                 <div className='flex justify-center items-center'>
                     <h1 className="font-bold text-sm md:text-lg text-white mr-2">Pending Payments</h1>
 
@@ -288,27 +288,6 @@ export default function PendingPayment() {
                         onChange={e => setForm({ ...form, wages: e.target.value })}
                     />
 
-
-                    <Autocomplete
-                        fullWidth
-                        size="small"
-                        options={agents}
-                        getOptionLabel={o => `${o.name}`}
-                        value={agents.find(a => `${a.name}` === form.agent) || null}
-                        onChange={(e, v) => setForm({ ...form, agent: v ? `${v.name}` : "" })}
-                        autoHighlight
-                        selectOnFocus
-                        clearOnBlur
-                        handleHomeEndKeys
-                        renderInput={p => (
-                            <TextField
-                                {...p}
-                                label="Select Agent*"
-                                margin="normal"
-                            />
-                        )}
-                    />
-
                     <TextField
                         fullWidth
                         label="Remark"
@@ -324,7 +303,7 @@ export default function PendingPayment() {
                 </DialogContent>
                 <small className='text-gray-600 mx-auto my-2'>All fields are required.</small>
                 <DialogActions>
-                    <Button fullWidth variant="contained" onClick={handleStatusSubmit} className="!bg-green-700 !font-bold">
+                    <Button fullWidth variant="contained" onClick={handleStatusSubmit} className="!bg-[#4ea863] hover:!bg-green-700 !font-bold">
                         Submit
                     </Button>
                 </DialogActions>

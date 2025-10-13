@@ -88,7 +88,7 @@ export default function Closed() {
         <Layout>
             <ToastContainer position="bottom-right" autoClose={2000} />
 
-            <section className="flex justify-between px-5 py-2 bg-[#4ea863]">
+            <section className="flex justify-between px-1 md:px-4 py-2 bg-[#4ea863]">
                 <div className='flex justify-center items-center'>
                     <h1 className="font-bold text-sm md:text-lg text-white mr-2">Closed Jobs</h1>
 
