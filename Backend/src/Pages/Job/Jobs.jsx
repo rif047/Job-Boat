@@ -17,11 +17,21 @@ export default function Jobs() {
 
     const EndPoint = 'jobs';
 
-    const userPermissions = {
-        canEdit: true,
-        canView: true,
-        canDelete: true,
-    };
+    const userType = localStorage.getItem("userType");
+
+    const userPermissions =
+        userType === "Admin"
+            ? {
+                canEdit: true,
+                canView: true,
+                canDelete: true,
+            }
+            : {
+                canEdit: true,
+                canView: true,
+                canDelete: false,
+            };
+
 
 
     const [modalOpen, setModalOpen] = useState(false);

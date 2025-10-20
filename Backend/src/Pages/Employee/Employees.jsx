@@ -15,11 +15,20 @@ export default function Employees() {
 
     const EndPoint = 'employees';
 
-    const userPermissions = {
-        canEdit: true,
-        canView: true,
-        canDelete: true,
-    };
+    const userType = localStorage.getItem("userType");
+
+    const userPermissions =
+        userType === "Admin"
+            ? {
+                canEdit: true,
+                canView: true,
+                canDelete: true,
+            }
+            : {
+                canEdit: true,
+                canView: true,
+                canDelete: false,
+            };
 
 
     const [modalOpen, setModalOpen] = useState(false);
@@ -132,6 +141,7 @@ export default function Employees() {
 
 
     const columns = [
+        { key: "createdOn", accessorFn: (row) => row.createdOn ? new Date(row.createdOn).toLocaleDateString() : '', header: 'Date', maxSize: 80 },
         { accessorKey: 'name', header: 'Employee Name' },
         { accessorKey: 'phone', header: 'Phone', enableClickToCopy: true, },
         { accessorKey: 'city', header: 'City' },
@@ -181,12 +191,25 @@ export default function Employees() {
                 </div>
 
                 <div className="flex gap-3 items-center">
-                    <button
-                        onClick={() => document.getElementById('importExcelInput').click()}
-                        className="flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-xl font-semibold text-sm shadow-sm border border-gray-200 hover:bg-gray-100 hover:shadow transition-all duration-200 cursor-pointer"
-                    >
-                        📥 Import
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => document.getElementById('importExcelInput').click()}
+                            className="flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-xl font-semibold text-sm shadow-sm border border-gray-200 hover:bg-gray-100 hover:shadow transition-all duration-200 cursor-pointer"
+                        >
+                            📥 Import
+                        </button>
+
+                        <a
+                            href="https://docs.google.com/spreadsheets/d/1lUUPi6LoTXKuZXDPAPjDaq4oyewyL29dYETiDg_s-N0/edit?gid=0#gid=0"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-xl font-semibold text-sm shadow-sm border border-gray-200 hover:bg-gray-100 hover:shadow transition-all duration-200 cursor-pointer"
+                        >
+                            📄 Import Template
+                        </a>
+                    </div>
+
+
 
                     <input
                         id="importExcelInput"

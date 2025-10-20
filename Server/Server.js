@@ -11,6 +11,7 @@ const routes = require('./Routes');
 const Login = require('./API/Auth/Login');
 const Check_Login = require('./Middlewares/Check_Login');
 const BackupRoutes = require('./Config/Backup');
+const Search = require('./Config/Search');
 
 
 const app = express();
@@ -75,6 +76,7 @@ app.use('/login', Login);
 // app.use('/api', Check_Login, routes);
 app.use('/api', routes);
 app.use('/db', BackupRoutes);
+app.use('/search', Search);
 
 
 

@@ -9,7 +9,10 @@ import './MUI.css';
 
 export default function Datatable({ columns, data, onEdit, onView, onDelete, permissions }) {
 
-    const excludedFields = ['_id', 'secret_code', 'password', '__v', 'images', 'createdOn', 'status'];
+    const excludedFields = ['_id', 'secret_code', 'password', '__v', 'images', 'createdOn'];
+
+    const userType = localStorage.getItem("userType");
+
 
     const handleExportCsv = () => {
         const filteredData = data.map(row => {
@@ -90,13 +93,16 @@ export default function Datatable({ columns, data, onEdit, onView, onDelete, per
             muiPaginationProps={{ rowsPerPageOptions: [10, 50, 100] }}
             enableColumnActions={false}
             enableCellActions={true}
-            renderTopToolbarCustomActions={() => (
-                <section>
-                    <Button className="!text-black !capitalize" onClick={handleExportCsv} startIcon={<DownloadIcon />}>
-                        Export
-                    </Button>
-                </section>
-            )}
+            renderTopToolbarCustomActions={() =>
+                userType !== "Agent" && (
+                    <section>
+                        <Button className="!text-black !capitalize" onClick={handleExportCsv} startIcon={<DownloadIcon />}>
+                            Export
+                        </Button>
+                    </section>
+                )
+            }
+
         />
     );
 }
