@@ -34,7 +34,7 @@ export default function View({ open, onClose, viewData }) {
 
     return (
         <Modal open={open} onClose={onClose}>
-            <Box sx={modalStyle} className='max-h-[90vh]'>
+            <Box sx={modalStyle} className='max-h-[95vh]'>
                 <div className='flex justify-between mb-5'>
                     <Typography variant="h6" component="h2" className='!font-bold !flex !items-center !space-x-1'>
                         <span>{viewData ? viewData.name.toUpperCase() : 'Loading...'} Details</span>

@@ -19,8 +19,15 @@ router.get("/", async (req, res) => {
             if (sampleDocs.length === 0) continue;
 
             const sampleKeys = Object.keys(flattenObject(sampleDocs[0]));
+
             const orConditions = sampleKeys.map((key) => ({
-                [key]: { $regex: q, $options: "i" },
+                $expr: {
+                    $regexMatch: {
+                        input: { $toString: `$${key}` },
+                        regex: q,
+                        options: "i",
+                    },
+                },
             }));
 
             const docs = await collection

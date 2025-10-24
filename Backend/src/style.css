@@ -38,21 +38,6 @@ body {
     --toastify-color-info: #f7e628 !important;
 }
 
-::-webkit-scrollbar {
-    background: transparent;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    display: none;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
-}
-
-
-
-
 
 
 

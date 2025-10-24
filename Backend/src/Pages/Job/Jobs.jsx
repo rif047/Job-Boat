@@ -193,7 +193,7 @@ export default function Jobs() {
         { key: "owner", accessorKey: 'owner', header: 'Owner' },
         { key: "position", accessorKey: 'position', header: 'Position' },
         { key: "city", accessorKey: 'city', header: 'City' },
-        { key: "wages", accessorFn: row => `£${row.wages}`, header: 'Wage', maxSize: 60 },
+        { id: 'wages', accessorFn: row => row.wages ? `£${row.wages}` : '', header: 'Wage', maxSize: 60 },
         { key: "accommodation", accessorKey: 'accommodation', header: 'Accom', maxSize: 60 },
         { key: "agent", accessorKey: 'agent', header: 'agent', maxSize: 80 },
         {

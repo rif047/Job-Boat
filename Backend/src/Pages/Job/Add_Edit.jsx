@@ -118,10 +118,16 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
     return (
         <>
             <Modal open={open}>
-                <Box sx={modalStyle} className="max-h-[90vh]">
-                    <Box display="flex" justifyContent="space-between" mb={1}>
-                        <Typography className="!font-bold" variant="h6">
-                            {data ? "Update Job" : "Create New Job"}
+                <Box sx={modalStyle} className="max-h-[95vh] overflow-y-auto">
+                    <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        mb={3}
+                        sx={{ position: 'sticky', top: 0, backgroundColor: '#fdfdfd', zIndex: 10, borderBottom: '1px solid #ddd', pb: 1 }}
+                    >
+                        <Typography className='!font-bold' variant="h6">
+                            {data ? 'Update Data' : 'Create New'}
                         </Typography>
                         <IconButton onClick={onClose}>
                             <CloseIcon />
@@ -178,7 +184,7 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
 
                     <TextField
                         fullWidth
-                        label="City"
+                        label="City*"
                         name="city"
                         size="small"
                         margin="normal"
@@ -190,7 +196,7 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
 
                     <TextField
                         fullWidth
-                        label="Position"
+                        label="Position*"
                         name="position"
                         size="small"
                         margin="normal"

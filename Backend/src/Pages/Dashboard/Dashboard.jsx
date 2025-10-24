@@ -1,7 +1,19 @@
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Layout from "../../Layout";
-import { useEffect, useState } from "react";
-import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, } from "recharts";
+import {
+    BarChart,
+    Bar,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    Legend,
+} from "recharts";
 import CachedIcon from "@mui/icons-material/Cached";
 
 const formatCurrency = (val) =>
@@ -12,10 +24,9 @@ const formatCurrency = (val) =>
         maximumFractionDigits: 0,
     }).format(val);
 
-
 export default function Dashboard() {
     document.title = "Dashboard";
-
+    const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         pendingPayments: 0,
         pendingLeads: 0,
@@ -28,17 +39,19 @@ export default function Dashboard() {
         totalLost: 0,
         monthLost: 0,
     });
+    const [charts, setCharts] = useState({
+        closedDaily: [],
+        lostDaily: [],
+        incomeMonthly: [],
+        jobMonthly: [],
+        sixMonth: [],
+    });
 
-    const [loading, setLoading] = useState(true);
-    const [closedChart, setClosedChart] = useState([]);
-    const [lostChart, setLostChart] = useState([]);
-    const [incomeChart, setIncomeChart] = useState([]);
-    const [jobCreationChart, setJobCreationChart] = useState([]);
-    const [sixMonthChart, setSixMonthChart] = useState([]);
-
-    const monthLabel = new Date().toLocaleString("default", { month: "short", year: "numeric" });
+    const monthLabel = new Date().toLocaleString("default", {
+        month: "short",
+        year: "numeric",
+    });
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const toDate = (v) => (v ? new Date(v).toISOString().slice(0, 10) : null);
 
     const loadDashboard = async () => {
         setLoading(true);
@@ -55,13 +68,9 @@ export default function Dashboard() {
 
             let pendingPayments = 0,
                 pendingLeads = 0,
-                totalOwners = owners.length,
-                monthOwners = owners.filter((o) => new Date(o.createdOn) >= startOfMonth).length,
-                totalEmployees = employees.length,
-                monthEmployees = employees.filter((e) => new Date(e.createdOn) >= startOfMonth).length,
                 totalClosed = 0,
-                monthClosed = 0,
                 totalLost = 0,
+                monthClosed = 0,
                 monthLost = 0;
 
             const closedDaily = {},
@@ -69,38 +78,34 @@ export default function Dashboard() {
                 closedMonthly = {},
                 lostMonthly = {},
                 incomeMonthly = {},
-                createdMonthly = {};
+                jobMonthly = {};
 
             jobs.forEach((job) => {
                 const created = new Date(job.createdOn);
-                const jobDate = job.date ? new Date(job.date) : created;
-                const date = toDate(jobDate);
-                if (!date) return;
+                const date = job.date ? new Date(job.date) : created;
+                const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+                const createdKey = `${created.getFullYear()}-${created.getMonth() + 1}`;
+                const dateStr = date.toISOString().split("T")[0];
 
                 if (job.status === "PendingPayment") pendingPayments++;
                 if (job.status === "Pending") pendingLeads++;
 
-                const key = `${jobDate.getFullYear()}-${jobDate.getMonth() + 1}`;
-                const createdKey = `${created.getFullYear()}-${created.getMonth() + 1}`;
-
                 if (job.status === "Closed") {
                     totalClosed++;
-                    if (jobDate >= startOfMonth) monthClosed++;
-                    closedDaily[date] = (closedDaily[date] || 0) + 1;
+                    if (date >= startOfMonth) monthClosed++;
+                    closedDaily[dateStr] = (closedDaily[dateStr] || 0) + 1;
                     closedMonthly[key] = (closedMonthly[key] || 0) + 1;
-                    const fee = Number(job.fee) || 0;
-                    incomeMonthly[key] = (incomeMonthly[key] || 0) + fee;
+                    incomeMonthly[key] = (incomeMonthly[key] || 0) + (Number(job.fee) || 0);
                 }
 
                 if (job.status === "LeadLost") {
                     totalLost++;
-                    if (jobDate >= startOfMonth) monthLost++;
-                    lostDaily[date] = (lostDaily[date] || 0) + 1;
+                    if (date >= startOfMonth) monthLost++;
+                    lostDaily[dateStr] = (lostDaily[dateStr] || 0) + 1;
                     lostMonthly[key] = (lostMonthly[key] || 0) + 1;
                 }
 
-
-                createdMonthly[createdKey] = (createdMonthly[createdKey] || 0) + 1;
+                jobMonthly[createdKey] = (jobMonthly[createdKey] || 0) + 1;
             });
 
             const now = new Date();
@@ -113,25 +118,25 @@ export default function Dashboard() {
                     closed: closedMonthly[key] || 0,
                     lost: lostMonthly[key] || 0,
                     income: incomeMonthly[key] || 0,
-                    jobs: createdMonthly[key] || 0,
+                    jobs: jobMonthly[key] || 0,
                 });
             }
 
             setStats({
                 pendingPayments,
                 pendingLeads,
-                totalOwners,
-                monthOwners,
-                totalEmployees,
-                monthEmployees,
+                totalOwners: owners.length,
+                monthOwners: owners.filter((o) => new Date(o.createdOn) >= startOfMonth).length,
+                totalEmployees: employees.length,
+                monthEmployees: employees.filter((e) => new Date(e.createdOn) >= startOfMonth).length,
                 totalClosed,
                 monthClosed,
                 totalLost,
                 monthLost,
             });
+
             const currentYear = new Date().getFullYear();
             const currentMonth = new Date().getMonth();
-
             const filterCurrentMonth = (obj) =>
                 Object.entries(obj)
                     .filter(([date]) => {
@@ -140,12 +145,13 @@ export default function Dashboard() {
                     })
                     .map(([date, count]) => ({ date, count }));
 
-            setClosedChart(filterCurrentMonth(closedDaily));
-            setLostChart(filterCurrentMonth(lostDaily));
-
-            setIncomeChart(months.map((m) => ({ month: m.month, income: m.income })));
-            setJobCreationChart(months.map((m) => ({ month: m.month, jobs: m.jobs })));
-            setSixMonthChart(months.map((m) => ({ month: m.month, closed: m.closed, lost: m.lost })));
+            setCharts({
+                closedDaily: filterCurrentMonth(closedDaily),
+                lostDaily: filterCurrentMonth(lostDaily),
+                incomeMonthly: months.map((m) => ({ month: m.month, income: m.income })),
+                jobMonthly: months.map((m) => ({ month: m.month, jobs: m.jobs })),
+                sixMonth: months.map((m) => ({ month: m.month, closed: m.closed, lost: m.lost })),
+            });
         } catch (err) {
             console.error(err);
         } finally {
@@ -166,35 +172,14 @@ export default function Dashboard() {
         </div>
     );
 
-    const BarBox = ({ title, color, data, dataKey = "count", yLabel = "" }) => (
-        <div className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition">
-            <h2 className="text-lg font-semibold mb-3 text-gray-800">{title}</h2>
-            <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                    <XAxis dataKey="date" tick={{ fontSize: 11 }} angle={-30} textAnchor="end" height={50} />
-                    <YAxis
-                        tick={{ fontSize: 11 }}
-                        label={yLabel ? { value: yLabel, angle: -90, position: "insideLeft" } : undefined}
-                    />
-                    <Tooltip />
-                    <Bar dataKey={dataKey} fill={color} radius={[6, 6, 0, 0]} />
-                </BarChart>
-            </ResponsiveContainer>
-        </div>
-    );
-
-    const SimpleBarBox = ({ title, color, data, dataKey, yLabel, format }) => (
+    const SimpleBar = ({ title, color, data, dataKey, format }) => (
         <div className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition">
             <h2 className="text-lg font-semibold mb-3 text-gray-800">{title}</h2>
             <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={data}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                     <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                    <YAxis
-                        tick={{ fontSize: 12 }}
-                        label={yLabel ? { value: yLabel, angle: -90, position: "insideLeft" } : undefined}
-                    />
+                    <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip formatter={(val) => (format === "currency" ? formatCurrency(val) : val)} />
                     <Bar dataKey={dataKey} fill={color} radius={[6, 6, 0, 0]} />
                 </BarChart>
@@ -210,21 +195,41 @@ export default function Dashboard() {
                 : 0;
         const totalRate =
             stats.totalClosed + stats.totalLost > 0
-                ? ((stats.totalClosed / (stats.totalLost + stats.totalClosed)) * 100).toFixed(1)
+                ? ((stats.totalClosed / (stats.totalClosed + stats.totalLost)) * 100).toFixed(1)
                 : 0;
+
+        const dataSets = [
+            {
+                label: "Current Month",
+                data: [
+                    { name: "Closed", value: stats.monthClosed },
+                    { name: "Lost", value: stats.monthLost },
+                ],
+                rate: monthRate,
+            },
+            {
+                label: "Overall",
+                data: [
+                    { name: "Closed", value: stats.totalClosed },
+                    { name: "Lost", value: stats.totalLost },
+                ],
+                rate: totalRate,
+            },
+        ];
 
         return (
             <div className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition">
                 <h2 className="text-lg font-semibold text-gray-800 mb-2">Closed vs Lost Jobs</h2>
                 <p className="text-sm text-gray-500 mb-4">Monthly & All-time comparison</p>
                 <div className="flex flex-col sm:flex-row justify-around items-center gap-4">
-                    {[{ data: [{ name: "Closed", value: stats.monthClosed }, { name: "Lost", value: stats.monthLost }], rate: monthRate, label: "Current Month" },
-                    { data: [{ name: "Closed", value: stats.totalClosed }, { name: "Lost", value: stats.totalLost }], rate: totalRate, label: "Overall" }].map((v, i) => (
+                    {dataSets.map((v, i) => (
                         <div key={i} className="flex flex-col items-center w-full sm:w-1/2">
                             <ResponsiveContainer width="100%" height={220}>
                                 <PieChart>
                                     <Pie data={v.data} dataKey="value" cx="50%" cy="50%" outerRadius={70} label>
-                                        {v.data.map((_, i2) => <Cell key={i2} fill={colors[i2]} />)}
+                                        {v.data.map((_, i2) => (
+                                            <Cell key={i2} fill={colors[i2]} />
+                                        ))}
                                     </Pie>
                                     <Tooltip />
                                 </PieChart>
@@ -240,34 +245,25 @@ export default function Dashboard() {
         );
     };
 
-    const SixMonthBox = () => {
-        const totalClosed = sixMonthChart.reduce((a, b) => a + b.closed, 0);
-        const totalLost = sixMonthChart.reduce((a, b) => a + b.lost, 0);
-        const rate = totalClosed + totalLost > 0 ? ((totalClosed / (totalClosed + totalLost)) * 100).toFixed(1) : 0;
+    const SixMonthBox = () => (
+        <div className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition">
+            <h2 className="text-lg font-semibold text-gray-800">Closed vs Lost Jobs</h2>
+            <p className="text-sm text-gray-500 mb-4">Last 6 Months</p>
+            <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={charts.sixMonth}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="closed" fill="#0fb07a" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="lost" fill="#f87171" radius={[6, 6, 0, 0]} />
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
+    );
 
-        return (
-            <div className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition">
-                <h2 className="text-lg font-semibold text-gray-800">Closed vs Lost Jobs</h2>
-                <p className="text-sm text-gray-500 mb-3">
-                    {/* Success Rate: <span className="font-semibold text-green-600">{rate}%</span> */}
-                    Last 6 Months
-                </p>
-                <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={sixMonthChart}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                        <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                        <YAxis tick={{ fontSize: 12 }} />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="closed" fill="#0fb07a" radius={[6, 6, 0, 0]} />
-                        <Bar dataKey="lost" fill="#f87171" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
-        );
-    };
-
-    if (loading) {
+    if (loading)
         return (
             <Layout>
                 <div className="flex flex-col items-center justify-center min-h-screen text-gray-500">
@@ -276,7 +272,6 @@ export default function Dashboard() {
                 </div>
             </Layout>
         );
-    }
 
     return (
         <Layout>
@@ -296,99 +291,89 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <StatCard icon="⏳" title="Hot Leads (Backlog)" value={stats.pendingLeads} />
                     <StatCard icon="💷" title="Pending Payments" value={stats.pendingPayments} />
-                    <StatCard icon="👤" title={`Owners (${monthLabel})`} value={stats.monthOwners} sub={`${stats.totalOwners} total`} />
-                    <StatCard icon="👔" title={`Employees (${monthLabel})`} value={stats.monthEmployees} sub={`${stats.totalEmployees} total`} />
+                    <StatCard
+                        icon="👤"
+                        title={`Owners (${monthLabel})`}
+                        value={stats.monthOwners}
+                        sub={`${stats.totalOwners} total`}
+                    />
+                    <StatCard
+                        icon="👔"
+                        title={`Employees (${monthLabel})`}
+                        value={stats.monthEmployees}
+                        sub={`${stats.totalEmployees} total`}
+                    />
                 </div>
 
-                <div className="grid grid-cols-1 gap-6">
-                    <div className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition">
-                        <h2 className="text-lg font-semibold mb-3 text-gray-800">
-                            Closed vs Lost Jobs ({new Date().toLocaleString("default", { month: "short", year: "numeric" })})
-                        </h2>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart
-                                data={(() => {
-                                    const map = {};
-                                    closedChart.forEach((item) => {
-                                        map[item.date] = { date: item.date, closed: item.count || 0, lost: 0 };
-                                    });
-                                    lostChart.forEach((item) => {
-                                        if (!map[item.date]) map[item.date] = { date: item.date, closed: 0, lost: 0 };
-                                        map[item.date].lost = item.count || 0;
-                                    });
+                <div className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition">
+                    <h2 className="text-lg font-semibold mb-3 text-gray-800">
+                        Closed vs Lost Jobs ({monthLabel})
+                    </h2>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart
+                            barCategoryGap="20%"
+                            data={(() => {
+                                const map = {};
+                                charts.closedDaily.forEach((i) => {
+                                    map[i.date] = { date: i.date, closed: i.count, lost: 0 };
+                                });
+                                charts.lostDaily.forEach((i) => {
+                                    if (!map[i.date]) map[i.date] = { date: i.date, closed: 0, lost: 0 };
+                                    map[i.date].lost = i.count;
+                                });
 
-                                    const year = new Date().getFullYear();
-                                    const month = new Date().getMonth();
-                                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                                const year = new Date().getFullYear();
+                                const month = new Date().getMonth();
+                                const days = new Date(year, month + 1, 0).getDate();
+                                const data = [];
 
-                                    // ✅ local date formatter (no UTC shift)
-                                    const formatLocalDate = (y, m, d) =>
-                                        `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+                                for (let d = 1; d <= days; d++) {
+                                    const date = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(
+                                        2,
+                                        "0"
+                                    )}`;
+                                    const item = map[date] || { date, closed: 0, lost: 0 };
+                                    const total = item.closed + item.lost;
+                                    const rate = total ? ((item.closed / total) * 100).toFixed(1) : 0;
+                                    data.push({ ...item, rate });
+                                }
 
-                                    const fullMonthData = [];
-                                    for (let d = 1; d <= daysInMonth; d++) {
-                                        const dateStr = formatLocalDate(year, month, d);
-                                        const dayData = map[dateStr] || { date: dateStr, closed: 0, lost: 0 };
-                                        const total = dayData.closed + dayData.lost;
-                                        const rate = total > 0 ? ((dayData.closed / total) * 100).toFixed(1) : 0;
-                                        fullMonthData.push({ ...dayData, rate });
-                                    }
+                                return data;
+                            })()}
+                        >
+                            <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                            <XAxis
+                                dataKey="date"
+                                tickFormatter={(v) => new Date(v).getDate()}
+                                tick={{ fontSize: 10 }}
+                                height={40}
+                            />
+                            <YAxis tick={{ fontSize: 11 }} />
+                            <Tooltip
+                                formatter={(value, name, props) => {
+                                    const key = props?.dataKey;
+                                    const label =
+                                        key === "closed" ? "Closed" :
+                                            key === "lost" ? "Lost" :
+                                                key === "rate" ? "Success Rate" :
+                                                    key;
+                                    return key === "rate" ? [`${value}%`, label] : [value, label];
+                                }}
+                                labelFormatter={(label) =>
+                                    new Date(label).toLocaleDateString("en-GB", {
+                                        day: "numeric",
+                                        month: "short",
+                                    })
+                                }
+                                cursor={{ fill: "rgba(0,0,0,0.05)" }}
+                            />
 
-                                    return fullMonthData;
-                                })()}
-
-                            >
-                                <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                                <XAxis
-                                    dataKey="date"
-                                    tickFormatter={(v) => new Date(v).getDate()}
-                                    tick={{ fontSize: 10 }}
-                                    height={40}
-                                />
-                                <YAxis tick={{ fontSize: 11 }} />
-                                <Tooltip
-                                    contentStyle={{ fontSize: 12 }}
-                                    formatter={(value, name, props) => {
-                                        if (name === "rate") return [`${value}%`, "Success Rate"];
-                                        return [value, name === "closed" ? "Closed Jobs" : "Lost Leads"];
-                                    }}
-                                    labelFormatter={(label, data) => {
-                                        const dateObj = new Date(label);
-                                        return dateObj.toLocaleDateString("en-GB", {
-                                            day: "numeric",
-                                            month: "short",
-                                        });
-                                    }}
-                                    cursor={{ fill: "rgba(0,0,0,0.05)" }}
-                                />
-                                <Legend />
-                                <Bar
-                                    dataKey="closed"
-                                    name="Closed"
-                                    fill="#0fb07a"
-                                    radius={[6, 6, 0, 0]}
-                                    onMouseOver={(data, index, e) => {
-                                        e?.target?.setAttribute("data-rate", data.payload.rate);
-                                    }}
-                                />
-                                <Bar
-                                    dataKey="lost"
-                                    name="Lost"
-                                    fill="#f87171"
-                                    radius={[6, 6, 0, 0]}
-                                    onMouseOver={(data, index, e) => {
-                                        e?.target?.setAttribute("data-rate", data.payload.rate);
-                                    }}
-                                />
-                            </BarChart>
-                        </ResponsiveContainer>
-                        <p className="text-xs text-gray-500 text-center mt-2">
-                            Showing from 1st to {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()}{" "}
-                            {new Date().toLocaleString("default", { month: "short" })}
-                        </p>
-                    </div>
+                            <Legend />
+                            <Bar dataKey="closed" name="Closed" fill="#0fb07a" radius={[6, 6, 0, 0]} />
+                            <Bar dataKey="lost" name="Lost" fill="#f87171" radius={[6, 6, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
                 </div>
-
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <PieBox />
@@ -396,11 +381,20 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <SimpleBarBox title="💵 Income (Last 6 Months)" color="#64748b" data={incomeChart} dataKey="income" yLabel="Amount (£)" format="currency" />
-                    <SimpleBarBox title="🗓️ Collected Leads (Last 6 Months)" color="#0ea5e9" data={jobCreationChart} dataKey="jobs" yLabel="Count" />
+                    <SimpleBar
+                        title="💵 Income (Last 6 Months)"
+                        color="#64748b"
+                        data={charts.incomeMonthly}
+                        dataKey="income"
+                        format="currency"
+                    />
+                    <SimpleBar
+                        title="🗓️ Collected Leads (Last 6 Months)"
+                        color="#0ea5e9"
+                        data={charts.jobMonthly}
+                        dataKey="jobs"
+                    />
                 </div>
-
-
             </section>
         </Layout>
     );

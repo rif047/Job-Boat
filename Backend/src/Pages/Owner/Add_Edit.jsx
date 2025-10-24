@@ -84,9 +84,17 @@ export default function AddEditOwner({ open, onClose, data, refreshData }) {
 
     return (
         <Modal open={open}>
-            <Box sx={modalStyle} className='max-h-[90vh]'>
-                <Box display="flex" justifyContent="space-between" mb={1}>
-                    <Typography className='!font-bold' variant="h6">{data ? 'Update Data' : 'Create New'}</Typography>
+            <Box sx={modalStyle} className='max-h-[95vh]'>
+                <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mb={1}
+                    sx={{ position: 'sticky', top: 0, backgroundColor: '#fdfdfd', zIndex: 10, borderBottom: '1px solid #ddd', pb: 1, }}
+                >
+                    <Typography className='!font-bold' variant="h6">
+                        {data ? 'Update Data' : 'Create New'}
+                    </Typography>
                     <IconButton onClick={onClose}>
                         <CloseIcon />
                     </IconButton>

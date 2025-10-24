@@ -23,6 +23,7 @@ export default function TopHeader() {
 
     const pathName = window.location.pathname.split("/").slice(1, 3).join(" > ");
 
+
     useEffect(() => {
         const userData = localStorage.getItem("user");
         if (userData) {
@@ -38,35 +39,42 @@ export default function TopHeader() {
         window.location.href = "/";
     };
 
-    const handleSearch = async (e) => {
+    let debounceTimer;
+
+    const handleSearch = (e) => {
         const value = e.target.value;
         setQuery(value);
 
-        if (!value.trim()) {
-            setResults([]);
-            setShowResults(false);
-            return;
-        }
+        if (debounceTimer) clearTimeout(debounceTimer);
 
-        setLoading(true);
-        try {
-            const res = await axios.get(
-                `${import.meta.env.VITE_SERVER_URL}/search?query=${encodeURIComponent(value)}`
-            );
+        debounceTimer = setTimeout(async () => {
+            if (!value.trim()) {
+                setResults([]);
+                setShowResults(false);
+                return;
+            }
 
-            const mappedResults = res.data.map((group) => ({
-                ...group,
-                total: group.results.length
-            }));
+            setLoading(true);
+            try {
+                const res = await axios.get(
+                    `${import.meta.env.VITE_SERVER_URL}/search?query=${encodeURIComponent(value)}`
+                );
 
-            setResults(mappedResults);
-            setShowResults(true);
-        } catch (err) {
-            console.error("Search error:", err);
-        } finally {
-            setLoading(false);
-        }
+                const mappedResults = res.data.map((group) => ({
+                    ...group,
+                    total: group.results.length,
+                }));
+
+                setResults(mappedResults);
+                setShowResults(true);
+            } catch (err) {
+                console.error("Search error:", err);
+            } finally {
+                setLoading(false);
+            }
+        }, 500);
     };
+
 
     const highlightText = (text, query) => {
         if (!query) return text;
@@ -164,7 +172,7 @@ export default function TopHeader() {
 
                                 <div className="sticky bottom-0 left-0 bg-white border-t border-gray-100">
                                     <button
-                                        className="w-full py-2 text-gray-500 text-sm cursor-pointer hover:text-gray-700 bg-gray-100 hover:bg-gray-200 flex items-center justify-center gap-1 transition-all"
+                                        className="w-full py-2 text-gray-500 text-sm cursor-pointer hover:text-gray-700 bg-green-50  hover:bg-green-200 flex items-center justify-center gap-1 transition-all"
                                         onClick={() => setShowResults(false)}
                                     >
                                         <CloseIcon fontSize="small" /> Close
