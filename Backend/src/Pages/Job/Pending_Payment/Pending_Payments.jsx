@@ -106,7 +106,7 @@ export default function PendingPayment() {
     };
 
 
-    const handleLostLead = async (row) => {
+    const handleToPending = async (row) => {
         if (window.confirm(`Cancel Job For ${row.position.toUpperCase()}?`)) {
             try {
                 await axios.patch(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}/deal_cancelled/${row._id}`, {
@@ -174,7 +174,7 @@ export default function PendingPayment() {
                     </button>
 
                     <button
-                        onClick={(e) => { e.stopPropagation(); handleLostLead(row.original); }}
+                        onClick={(e) => { e.stopPropagation(); handleToPending(row.original); }}
                         className="text-red-400 font-bold flex items-center cursor-pointer ml-3">
                         <span className="text-xs mr-1 text-center ">Cancel</span>
                         <HighlightOffIcon fontSize="small" />

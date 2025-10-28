@@ -6,11 +6,14 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CachedIcon from '@mui/icons-material/Cached';
+import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 
 export default function LostLead() {
     document.title = 'Closed Jobs';
 
     const EndPoint = 'jobs';
+
+    const userType = localStorage.getItem("userType");
 
     const userPermissions = {
         canEdit: false,
@@ -57,6 +60,23 @@ export default function LostLead() {
         }
     };
 
+    const handleToPending = async (row) => {
+        if (window.confirm(`Back to Hot Lead for ${row.position.toUpperCase()}?`)) {
+            try {
+                await axios.patch(
+                    `${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}/deal_cancelled/${row._id}`,
+                    { status: "Pending" }
+                );
+                toast.success("Job moved back to Hot Lead!");
+                fetchData();
+            } catch (error) {
+                console.error("Error updating status:", error);
+                toast.error("Failed to mark as Cancelled.");
+            }
+        }
+    };
+
+
     const handleEdit = (row) => {
         setEditData(row);
         setModalOpen(true);
@@ -81,6 +101,29 @@ export default function LostLead() {
         { key: "wages", accessorFn: row => `£${row.wages}`, header: 'Wage', maxSize: 60 },
         { key: "accommodation", accessorKey: 'accommodation', header: 'Accom', maxSize: 60 },
         { key: "agent", accessorKey: 'agent', header: 'agent', maxSize: 80 },
+        ...(userType === "Admin"
+            ? [
+                {
+                    key: "actions",
+                    header: "Set Status",
+                    maxSize: 50,
+                    Cell: ({ row }) => (
+                        <div className="flex">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToPending(row.original);
+                                }}
+                                className="text-orange-500 font-bold flex items-center cursor-pointer ml-3"
+                            >
+                                <span className="text-xs mr-1 text-center">Back to Hot Lead</span>
+                                <ArrowOutwardIcon fontSize="small" />
+                            </button>
+                        </div>
+                    ),
+                },
+            ]
+            : []),
     ];
 
     return (

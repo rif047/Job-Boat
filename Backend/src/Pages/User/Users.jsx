@@ -13,11 +13,15 @@ export default function Users() {
 
     const EndPoint = 'users';
 
+    const user = JSON.parse(localStorage.getItem("user"));
+    const username = user?.username?.toLowerCase() || "";
+
     const userPermissions = {
         canEdit: true,
         canView: true,
-        canDelete: true,
+        canDelete: username === "rif047" || username === "nasifom@cic",
     };
+
 
 
     const [modalOpen, setModalOpen] = useState(false);
