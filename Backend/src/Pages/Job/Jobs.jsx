@@ -147,19 +147,21 @@ export default function Jobs() {
 
 
     const handleLostLead = async (row) => {
-        if (window.confirm(`Cancel Job For ${row.position.toUpperCase()}?`)) {
-            try {
-                await axios.patch(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}/lead_lost/${row._id}`, {
-                    ...form,
-                    status: "LeadLost"
-                });
-                toast.success("Job marked as Lost Lead!");
-                fetchData();
-            } catch {
-                toast.error("Failed to mark as Lost Lead.");
-            }
-        }
+        const loggedUser = JSON.parse(localStorage.getItem('user'));
+        setSelectedRow(row);
+
+        setForm({
+            agent: loggedUser?.name || "",
+            employee: "",
+            fee: row.fee || "",
+            wages: row.wages || "",
+            remark: row.remark || ""
+        });
+
+        setSelectedStatus("LeadLost");
+        setStatusModalOpen(true);
     };
+
 
 
 
@@ -299,73 +301,90 @@ export default function Jobs() {
             <Dialog open={statusModalOpen} onClose={() => setStatusModalOpen(false)} maxWidth='xs'>
                 <DialogTitle>
                     <b>
-                        {selectedStatus === "Closed" ? "Set Status Closed" : "Set Status Pending Payment"}
+                        {selectedStatus === "Closed"
+                            ? "Set Status to Closed"
+                            : selectedStatus === "LeadLost"
+                                ? "Set Status to Lead Lost"
+                                : "Set Status to Pending Payment"}
                     </b>
                 </DialogTitle>
 
+
                 <DialogContent>
-                    <Autocomplete
-                        fullWidth
-                        size="small"
-                        options={employees}
-                        getOptionLabel={o => `${o.name} (${o.phone})`}
-                        value={employees.find(emp => `${emp.name} (${emp.phone})` === form.employee) || null}
-                        onChange={(e, v) => setForm({ ...form, employee: v ? `${v.name} (${v.phone})` : "" })}
-                        autoHighlight
-                        selectOnFocus
-                        clearOnBlur
-                        handleHomeEndKeys
-                        renderInput={p => (
+                    {selectedStatus === "LeadLost" ? (
+                        <>
                             <TextField
-                                {...p}
-                                label="Select Employee*"
+                                fullWidth
+                                label="Remark"
+                                size="small"
                                 margin="normal"
+                                multiline
+                                minRows={4}
+                                value={form.remark}
+                                onChange={e => setForm({ ...form, remark: e.target.value })}
                             />
-                        )}
-                    />
+                        </>
+                    ) : (
+                        <>
+                            <Autocomplete
+                                fullWidth
+                                size="small"
+                                options={employees}
+                                getOptionLabel={o => `${o.name} (${o.phone})`}
+                                value={employees.find(emp => `${emp.name} (${emp.phone})` === form.employee) || null}
+                                onChange={(e, v) => setForm({ ...form, employee: v ? `${v.name} (${v.phone})` : "" })}
+                                autoHighlight
+                                selectOnFocus
+                                clearOnBlur
+                                handleHomeEndKeys
+                                renderInput={p => (
+                                    <TextField {...p} label="Select Employee*" margin="normal" />
+                                )}
+                            />
 
+                            <TextField
+                                fullWidth
+                                size="small"
+                                margin="normal"
+                                label={selectedStatus === "Closed" ? "Final Fees*" : "Fees*"}
+                                value={form.fee}
+                                onChange={e => setForm({ ...form, fee: e.target.value })}
+                            />
 
-                    <TextField
-                        fullWidth
-                        size="small"
-                        margin="normal"
-                        label={selectedStatus === "Closed" ? "Final Fees*" : "Fees*"}
-                        value={form.fee}
-                        onChange={e => setForm({ ...form, fee: e.target.value })}
-                    />
+                            {selectedStatus !== "Closed" && (
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    margin="normal"
+                                    label="Advance Paid*"
+                                    value={form.advance_fee}
+                                    onChange={e => setForm({ ...form, advance_fee: e.target.value })}
+                                />
+                            )}
 
-                    {selectedStatus !== "Closed" && (
-                        <TextField
-                            fullWidth
-                            size="small"
-                            margin="normal"
-                            label="Advance Paid*"
-                            value={form.advance_fee}
-                            onChange={e => setForm({ ...form, advance_fee: e.target.value })}
-                        />
+                            <TextField
+                                fullWidth
+                                size="small"
+                                margin="normal"
+                                label="Wages*"
+                                value={form.wages}
+                                onChange={e => setForm({ ...form, wages: e.target.value })}
+                            />
+
+                            <TextField
+                                fullWidth
+                                label="Remark"
+                                size="small"
+                                margin="normal"
+                                multiline
+                                minRows={4}
+                                value={form.remark}
+                                onChange={e => setForm({ ...form, remark: e.target.value })}
+                            />
+                        </>
                     )}
-
-                    <TextField
-                        fullWidth
-                        size="small"
-                        margin="normal"
-                        label="Wages*"
-                        value={form.wages}
-                        onChange={e => setForm({ ...form, wages: e.target.value })}
-                    />
-
-                    <TextField
-                        fullWidth
-                        label="Remark"
-                        size="small"
-                        margin="normal"
-                        multiline
-                        minRows={4}
-                        value={form.remark}
-                        onChange={e => setForm({ ...form, remark: e.target.value })}
-                    />
-
                 </DialogContent>
+
 
                 <small className='text-gray-600 mx-auto my-2'>All fields are required.</small>
 

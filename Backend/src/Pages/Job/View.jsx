@@ -87,7 +87,10 @@ export default function View({ open, onClose, viewData }) {
                             </Typography>
 
 
-                            <Typography><strong>Remarks:</strong> {viewData.remark}</Typography>
+                            <Typography>
+                                <strong>Remarks:</strong>{" "}
+                                <span style={{ whiteSpace: 'pre-line' }}>{viewData?.remark || ''}</span>
+                            </Typography>
                         </Box>
                     </Box>
                 ) : (

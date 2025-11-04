@@ -107,7 +107,7 @@ export default function PendingPayment() {
 
 
     const handleToPending = async (row) => {
-        if (window.confirm(`Cancel Job For ${row.position.toUpperCase()}?`)) {
+        if (window.confirm(`Move to Hot Leads ${row.position.toUpperCase()}?`)) {
             try {
                 await axios.patch(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}/deal_cancelled/${row._id}`, {
                     ...form,

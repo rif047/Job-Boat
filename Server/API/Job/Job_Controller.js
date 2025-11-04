@@ -235,6 +235,7 @@ let LeadLost = async (req, res) => {
         }
 
         updateData.date = new Date().toISOString().split('T')[0];
+        updateData.remark = req.body.remark || updateData.remark;
         updateData.status = 'LeadLost';
 
         await updateData.save();
