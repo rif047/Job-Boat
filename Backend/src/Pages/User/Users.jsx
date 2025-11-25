@@ -17,9 +17,9 @@ export default function Users() {
     const username = user?.username?.toLowerCase() || "";
 
     const userPermissions = {
-        canEdit: true,
+        canEdit: username === "rif047" || username === "nasifom@cic" || username === "kam" || username === "abnoor",
         canView: true,
-        canDelete: username === "rif047" || username === "nasifom@cic",
+        canDelete: username === "rif047" || username === "nasifom@cic" || username === "kam" || username === "abnoor",
     };
 
 

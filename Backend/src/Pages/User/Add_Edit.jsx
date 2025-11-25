@@ -156,6 +156,7 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
                         onChange={handleChange}
                         error={!!errors[name]}
                         helperText={errors[name]}
+                        disabled={data && name === 'username'}
                     />
                 ))}
 

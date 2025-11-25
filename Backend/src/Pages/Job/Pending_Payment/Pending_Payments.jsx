@@ -33,7 +33,14 @@ export default function PendingPayment() {
     const [employees, setEmployees] = useState([]);
     const [statusModalOpen, setStatusModalOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState(null);
-    const [form, setForm] = useState({ agent: "", employee: "", fee: "", wages: "", remark: "" });
+    const [form, setForm] = useState({
+        agent: "",
+        employee: "",
+        fee: "",
+        wages: "",
+        remark: "",
+        date: new Date().toISOString().split("T")[0],
+    });
 
 
     const fetchData = async () => {
@@ -72,8 +79,10 @@ export default function PendingPayment() {
             employee: "",
             fee: row.fee || "",
             wages: row.wages || "",
-            remark: row.remark || ""
+            remark: row.remark || "",
+            date: new Date().toISOString().split("T")[0]
         });
+
 
         await fetchEmployees();
         setStatusModalOpen(true);
@@ -287,6 +296,17 @@ export default function PendingPayment() {
                         value={form.wages}
                         onChange={e => setForm({ ...form, wages: e.target.value })}
                     />
+
+                    <TextField
+                        fullWidth
+                        size="small"
+                        margin="normal"
+                        type="date"
+                        label="Closing Date*"
+                        value={form.date}
+                        onChange={e => setForm({ ...form, date: e.target.value })}
+                    />
+
 
                     <TextField
                         fullWidth

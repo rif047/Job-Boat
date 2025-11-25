@@ -166,7 +166,8 @@ let PendingPayment = async (req, res) => {
         updateData.employee = employee;
         updateData.remark = remark;
         updateData.status = 'PendingPayment';
-        updateData.date = new Date().toISOString().split('T')[0];
+        updateData.date = date || new Date().toISOString().split('T')[0];
+
 
         await updateData.save();
         res.status(200).json(updateData);
@@ -211,7 +212,7 @@ let Closed = async (req, res) => {
         updateData.employee = employee;
         updateData.remark = remark;
         updateData.status = 'Closed';
-        updateData.date = new Date().toISOString().split('T')[0];
+        updateData.date = date || new Date().toISOString().split('T')[0];
 
         await updateData.save();
         res.status(200).json(updateData);
