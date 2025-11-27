@@ -88,9 +88,9 @@ export default function Datatable({ columns, data, onEdit, onView, onDelete, per
             enableDensityToggle={false}
             initialState={{
                 density: 'compact',
-                pagination: { pageSize: 10, pageIndex: 0 },
+                pagination: { pageSize: 20, pageIndex: 0 },
             }}
-            muiPaginationProps={{ rowsPerPageOptions: [10, 50, 100] }}
+            muiPaginationProps={{ rowsPerPageOptions: [20, 50, 100] }}
             enableColumnActions={false}
             enableCellActions={true}
             renderTopToolbarCustomActions={() =>
