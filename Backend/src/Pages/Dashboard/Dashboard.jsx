@@ -1,32 +1,32 @@
-import { useEffect, useState } from "react";
 import axios from "axios";
 import Layout from "../../Layout";
-import {
-    BarChart,
-    Bar,
-    CartesianGrid,
-    XAxis,
-    YAxis,
-    Tooltip,
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
-    Legend,
-} from "recharts";
 import CachedIcon from "@mui/icons-material/Cached";
+import { useEffect, useState } from "react";
+import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, } from "recharts";
 
-const formatCurrency = (val) =>
+
+const CHART_ORDER = ["leads", "closed", "lost"];
+
+const CHART_COLORS = {
+    leads: "#f59e0b",
+    closed: "#0fb07a",
+    lost: "#ef4444",
+    income: "#64748b"
+};
+
+const formatCurrency = (v) =>
     new Intl.NumberFormat("en-GB", {
         style: "currency",
         currency: "GBP",
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-    }).format(val);
+    }).format(v);
 
 export default function Dashboard() {
     document.title = "Dashboard";
+
     const [loading, setLoading] = useState(true);
+
     const [stats, setStats] = useState({
         pendingPayments: 0,
         pendingLeads: 0,
@@ -39,132 +39,181 @@ export default function Dashboard() {
         totalLost: 0,
         monthLost: 0,
     });
+
     const [charts, setCharts] = useState({
         closedDaily: [],
         lostDaily: [],
+        createdDaily: [],
         incomeMonthly: [],
-        jobMonthly: [],
         sixMonth: [],
     });
 
-    const monthLabel = new Date().toLocaleString("default", {
-        month: "short",
-        year: "numeric",
-    });
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const monthLabel = () =>
+        new Date().toLocaleString("default", { month: "short", year: "numeric" });
 
-    const loadDashboard = async () => {
+    const firstDay = () =>
+        new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+    const processJobs = (jobs) => {
+        let pendingPayments = 0,
+            pendingLeads = 0,
+            totalClosed = 0,
+            totalLost = 0,
+            monthClosed = 0,
+            monthLost = 0;
+
+        const cd = {},
+            ld = {},
+            crd = {};
+        const cm = {},
+            lm = {},
+            crm = {},
+            im = {};
+
+        const start = firstDay();
+
+        jobs.forEach((j) => {
+            const created = new Date(j.createdOn);
+            const date = j.date ? new Date(j.date) : created;
+
+            const mk = `${date.getFullYear()}-${date.getMonth() + 1}`;
+            const cmk = `${created.getFullYear()}-${created.getMonth() + 1}`;
+            const ds = date.toISOString().split("T")[0];
+            const cds = created.toISOString().split("T")[0];
+
+            if (j.status === "PendingPayment") pendingPayments++;
+            if (j.status === "Pending") pendingLeads++;
+
+            if (j.status === "Closed") {
+                totalClosed++;
+                if (date >= start) monthClosed++;
+                cd[ds] = (cd[ds] || 0) + 1;
+                cm[mk] = (cm[mk] || 0) + 1;
+                im[mk] = (im[mk] || 0) + Number(j.fee || 0);
+            }
+
+            if (j.status === "LeadLost") {
+                totalLost++;
+                if (date >= start) monthLost++;
+                ld[ds] = (ld[ds] || 0) + 1;
+                lm[mk] = (lm[mk] || 0) + 1;
+            }
+
+            crd[cds] = (crd[cds] || 0) + 1;
+            crm[cmk] = (crm[cmk] || 0) + 1;
+        });
+
+        return {
+            counts: { pendingPayments, pendingLeads, totalClosed, totalLost, monthClosed, monthLost },
+            daily: { cd, ld, crd },
+            monthly: { cm, lm, crm, im }
+        };
+    };
+
+    const lastSixMonths = (cm, lm, crm, im) => {
+        const now = new Date();
+        const out = [];
+
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const k = `${d.getFullYear()}-${d.getMonth() + 1}`;
+
+            out.push({
+                month: d.toLocaleString("default", { month: "short" }),
+                leads: crm[k] || 0,
+                closed: cm[k] || 0,
+                lost: lm[k] || 0,
+                income: im[k] || 0,
+            });
+        }
+        return out;
+    };
+
+    const monthFilter = (obj) => {
+        const y = new Date().getFullYear();
+        const m = new Date().getMonth();
+        return Object.entries(obj)
+            .filter(([d]) => {
+                const dt = new Date(d);
+                return dt.getFullYear() === y && dt.getMonth() === m;
+            })
+            .map(([date, count]) => ({ date, count }));
+    };
+
+    const dailyToChart = (crd, cd, ld) => {
+        const map = {};
+        crd.forEach((x) => (map[x.date] = { date: x.date, leads: x.count, closed: 0, lost: 0 }));
+        cd.forEach((x) => {
+            if (!map[x.date]) map[x.date] = { date: x.date, leads: 0, closed: 0, lost: 0 };
+            map[x.date].closed = x.count;
+        });
+        ld.forEach((x) => {
+            if (!map[x.date]) map[x.date] = { date: x.date, leads: 0, closed: 0, lost: 0 };
+            map[x.date].lost = x.count;
+        });
+
+        const y = new Date().getFullYear();
+        const m = new Date().getMonth();
+        const days = new Date(y, m + 1, 0).getDate();
+        const arr = [];
+
+        for (let d = 1; d <= days; d++) {
+            const ds = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+            arr.push(map[ds] || { date: ds, leads: 0, closed: 0, lost: 0 });
+        }
+        return arr;
+    };
+
+    const load = async () => {
         setLoading(true);
         try {
-            const [jobsRes, ownersRes, employeesRes] = await Promise.all([
+            const [j, o, e] = await Promise.all([
                 axios.get(`${import.meta.env.VITE_SERVER_URL}/api/jobs`),
                 axios.get(`${import.meta.env.VITE_SERVER_URL}/api/owners`),
                 axios.get(`${import.meta.env.VITE_SERVER_URL}/api/employees`),
             ]);
 
-            const jobs = jobsRes.data || [];
-            const owners = ownersRes.data || [];
-            const employees = employeesRes.data || [];
+            const jobs = j.data || [];
+            const owners = o.data || [];
+            const employees = e.data || [];
+            const start = firstDay();
 
-            let pendingPayments = 0,
-                pendingLeads = 0,
-                totalClosed = 0,
-                totalLost = 0,
-                monthClosed = 0,
-                monthLost = 0;
+            const { counts, daily, monthly } = processJobs(jobs);
 
-            const closedDaily = {},
-                lostDaily = {},
-                closedMonthly = {},
-                lostMonthly = {},
-                incomeMonthly = {},
-                jobMonthly = {};
-
-            jobs.forEach((job) => {
-                const created = new Date(job.createdOn);
-                const date = job.date ? new Date(job.date) : created;
-                const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
-                const createdKey = `${created.getFullYear()}-${created.getMonth() + 1}`;
-                const dateStr = date.toISOString().split("T")[0];
-
-                if (job.status === "PendingPayment") pendingPayments++;
-                if (job.status === "Pending") pendingLeads++;
-
-                if (job.status === "Closed") {
-                    totalClosed++;
-                    if (date >= startOfMonth) monthClosed++;
-                    closedDaily[dateStr] = (closedDaily[dateStr] || 0) + 1;
-                    closedMonthly[key] = (closedMonthly[key] || 0) + 1;
-                    incomeMonthly[key] = (incomeMonthly[key] || 0) + (Number(job.fee) || 0);
-                }
-
-                if (job.status === "LeadLost") {
-                    totalLost++;
-                    if (date >= startOfMonth) monthLost++;
-                    lostDaily[dateStr] = (lostDaily[dateStr] || 0) + 1;
-                    lostMonthly[key] = (lostMonthly[key] || 0) + 1;
-                }
-
-                jobMonthly[createdKey] = (jobMonthly[createdKey] || 0) + 1;
-            });
-
-            const now = new Date();
-            const months = [];
-            for (let i = 5; i >= 0; i--) {
-                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
-                months.push({
-                    month: d.toLocaleString("default", { month: "short" }),
-                    closed: closedMonthly[key] || 0,
-                    lost: lostMonthly[key] || 0,
-                    income: incomeMonthly[key] || 0,
-                    jobs: jobMonthly[key] || 0,
-                });
-            }
+            const six = lastSixMonths(monthly.cm, monthly.lm, monthly.crm, monthly.im);
 
             setStats({
-                pendingPayments,
-                pendingLeads,
+                pendingPayments: counts.pendingPayments,
+                pendingLeads: counts.pendingLeads,
                 totalOwners: owners.length,
-                monthOwners: owners.filter((o) => new Date(o.createdOn) >= startOfMonth).length,
+                monthOwners: owners.filter((x) => new Date(x.createdOn) >= start).length,
                 totalEmployees: employees.length,
-                monthEmployees: employees.filter((e) => new Date(e.createdOn) >= startOfMonth).length,
-                totalClosed,
-                monthClosed,
-                totalLost,
-                monthLost,
+                monthEmployees: employees.filter((x) => new Date(x.createdOn) >= start).length,
+                totalClosed: counts.totalClosed,
+                monthClosed: counts.monthClosed,
+                totalLost: counts.totalLost,
+                monthLost: counts.monthLost,
             });
-
-            const currentYear = new Date().getFullYear();
-            const currentMonth = new Date().getMonth();
-            const filterCurrentMonth = (obj) =>
-                Object.entries(obj)
-                    .filter(([date]) => {
-                        const d = new Date(date);
-                        return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
-                    })
-                    .map(([date, count]) => ({ date, count }));
 
             setCharts({
-                closedDaily: filterCurrentMonth(closedDaily),
-                lostDaily: filterCurrentMonth(lostDaily),
-                incomeMonthly: months.map((m) => ({ month: m.month, income: m.income })),
-                jobMonthly: months.map((m) => ({ month: m.month, jobs: m.jobs })),
-                sixMonth: months.map((m) => ({ month: m.month, closed: m.closed, lost: m.lost })),
+                closedDaily: monthFilter(daily.cd),
+                lostDaily: monthFilter(daily.ld),
+                createdDaily: monthFilter(daily.crd),
+                incomeMonthly: six.map((x) => ({ month: x.month, income: x.income })),
+                sixMonth: six,
             });
         } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
+            console.log(err);
         }
+        setLoading(false);
     };
 
     useEffect(() => {
-        loadDashboard();
+        load();
     }, []);
 
-    const StatCard = ({ icon, title, value, sub }) => (
-        <div className="bg-white hover:bg-green-50 transition-all p-5 rounded-xl shadow-sm border border-gray-200 hover:shadow-md">
+    const Card = ({ icon, title, value, sub }) => (
+        <div className="bg-white hover:bg-green-50 p-5 rounded-xl shadow-sm border border-gray-400">
             <div className="text-3xl mb-1">{icon}</div>
             <p className="text-gray-500 text-sm">{title}</p>
             <p className="text-3xl font-bold text-gray-800">{value}</p>
@@ -172,96 +221,111 @@ export default function Dashboard() {
         </div>
     );
 
-    const SimpleBar = ({ title, color, data, dataKey, format }) => (
-        <div className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition">
+    const SimpleChart = ({ title, color, data, dataKey }) => (
+        <div className="bg-white p-5 rounded-xl shadow border border-gray-400">
             <h2 className="text-lg font-semibold mb-3 text-gray-800">{title}</h2>
             <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={data}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                     <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip formatter={(val) => (format === "currency" ? formatCurrency(val) : val)} />
-                    <Bar dataKey={dataKey} fill={color} radius={[6, 6, 0, 0]} />
+                    <Tooltip formatter={(v) => formatCurrency(v)} />
+                    <Bar
+                        dataKey={dataKey}
+                        fill={color}
+                        radius={[6, 6, 0, 0]}
+                        stroke="#4B5563"
+                        strokeWidth={.5} />
                 </BarChart>
             </ResponsiveContainer>
         </div>
     );
 
-    const PieBox = () => {
-        const colors = ["#0fb07a", "#f87171"];
-        const monthRate =
-            stats.monthClosed + stats.monthLost > 0
-                ? ((stats.monthClosed / (stats.monthClosed + stats.monthLost)) * 100).toFixed(1)
-                : 0;
-        const totalRate =
-            stats.totalClosed + stats.totalLost > 0
-                ? ((stats.totalClosed / (stats.totalClosed + stats.totalLost)) * 100).toFixed(1)
-                : 0;
-
-        const dataSets = [
-            {
-                label: "Current Month",
-                data: [
-                    { name: "Closed", value: stats.monthClosed },
-                    { name: "Lost", value: stats.monthLost },
-                ],
-                rate: monthRate,
-            },
-            {
-                label: "Overall",
-                data: [
-                    { name: "Closed", value: stats.totalClosed },
-                    { name: "Lost", value: stats.totalLost },
-                ],
-                rate: totalRate,
-            },
-        ];
-
-        return (
-            <div className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition">
-                <h2 className="text-lg font-semibold text-gray-800 mb-2">Closed vs Lost Jobs</h2>
-                <p className="text-sm text-gray-500 mb-4">Monthly & All-time comparison</p>
-                <div className="flex flex-col sm:flex-row justify-around items-center gap-4">
-                    {dataSets.map((v, i) => (
-                        <div key={i} className="flex flex-col items-center w-full sm:w-1/2">
-                            <ResponsiveContainer width="100%" height={220}>
-                                <PieChart>
-                                    <Pie data={v.data} dataKey="value" cx="50%" cy="50%" outerRadius={70} label>
-                                        {v.data.map((_, i2) => (
-                                            <Cell key={i2} fill={colors[i2]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
-                            <p className="text-sm text-gray-600 mt-2">
-                                {v.label} Success Rate:{" "}
-                                <span className="font-semibold text-green-600">{v.rate}%</span>
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        );
-    };
-
-    const SixMonthBox = () => (
-        <div className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition">
-            <h2 className="text-lg font-semibold text-gray-800">Closed vs Lost Jobs</h2>
-            <p className="text-sm text-gray-500 mb-4">Last 6 Months</p>
+    const SixMonth = () => (
+        <div className="bg-white p-5 rounded-xl shadow border border-gray-400">
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">Summary (Last 6 Months)</h2>
             <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={charts.sixMonth}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                     <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
+                    <Tooltip
+                        formatter={(v, n) => [v, n.charAt(0).toUpperCase() + n.slice(1)]}
+                    />
                     <Legend />
-                    <Bar dataKey="closed" fill="#0fb07a" radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="lost" fill="#f87171" radius={[6, 6, 0, 0]} />
+                    {CHART_ORDER.map((k) => (
+                        <Bar
+                            key={k}
+                            dataKey={k}
+                            name={k.charAt(0).toUpperCase() + k.slice(1)}
+                            fill={CHART_COLORS[k]}
+                            radius={[6, 6, 0, 0]}
+                            stroke="#4B5563"
+                            strokeWidth={.5}
+                        />
+                    ))}
                 </BarChart>
             </ResponsiveContainer>
         </div>
     );
+
+    const MonthChart = () => {
+        const data = dailyToChart(charts.createdDaily, charts.closedDaily, charts.lostDaily);
+
+        const total = data.reduce(
+            (a, b) => ({
+                leads: a.leads + b.leads,
+                closed: a.closed + b.closed,
+                lost: a.lost + b.lost,
+            }),
+            { leads: 0, closed: 0, lost: 0 }
+        );
+
+        return (
+            <div className="bg-white p-5 rounded-xl shadow border border-gray-400">
+                <h2 className="text-lg font-semibold mb-3 text-gray-800">
+                    Summary ({monthLabel()})
+                </h2>
+                <div className="mb-4 text-sm text-gray-600">
+                    Total Leads: {total.leads} | Closed: {total.closed} | Lost: {total.lost}
+                </div>
+
+                <ResponsiveContainer width="100%" height={300}>
+                    <BarChart barCategoryGap="20%" data={data}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                        <XAxis
+                            dataKey="date"
+                            tickFormatter={(d) => new Date(d).getDate()}
+                            tick={{ fontSize: 10 }}
+                            height={40}
+                        />
+                        <YAxis tick={{ fontSize: 11 }} />
+                        <Tooltip
+                            formatter={(v, n) => [v, n.charAt(0).toUpperCase() + n.slice(1)]}
+                            labelFormatter={(d) =>
+                                new Date(d).toLocaleDateString("en-GB", {
+                                    day: "numeric",
+                                    month: "short",
+                                })
+                            }
+                        />
+                        <Legend />
+                        {CHART_ORDER.map((k) => (
+                            <Bar
+                                key={k}
+                                dataKey={k}
+                                name={k.charAt(0).toUpperCase() + k.slice(1)}
+                                fill={CHART_COLORS[k]}
+                                radius={[6, 6, 0, 0]}
+                                stroke="#4B5563"
+                                strokeWidth={.5}
+                            />
+                        ))}
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+        );
+    };
 
     if (loading)
         return (
@@ -279,7 +343,7 @@ export default function Dashboard() {
                 <div className="flex justify-between items-center flex-wrap gap-3 mb-6">
                     <h1 className="text-2xl font-bold text-gray-800">📊 Dashboard Overview</h1>
                     <button
-                        onClick={loadDashboard}
+                        onClick={load}
                         disabled={loading}
                         className="flex items-center gap-2 border-2 text-green-700 border-green-700 px-4 py-2 rounded-md hover:bg-green-50 cursor-pointer"
                     >
@@ -289,110 +353,32 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard icon="⏳" title="Hot Leads (Backlog)" value={stats.pendingLeads} />
-                    <StatCard icon="💷" title="Pending Payments" value={stats.pendingPayments} />
-                    <StatCard
+                    <Card icon="⏳" title="Hot Leads (Pending)" value={stats.pendingLeads} />
+                    <Card icon="💷" title="Pending Payments" value={stats.pendingPayments} />
+                    <Card
                         icon="👤"
-                        title={`Owners (${monthLabel})`}
+                        title={`Owners (${monthLabel()})`}
                         value={stats.monthOwners}
                         sub={`${stats.totalOwners} total`}
                     />
-                    <StatCard
+                    <Card
                         icon="👔"
-                        title={`Employees (${monthLabel})`}
+                        title={`Employees (${monthLabel()})`}
                         value={stats.monthEmployees}
                         sub={`${stats.totalEmployees} total`}
                     />
                 </div>
 
-                <div className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition">
-                    <h2 className="text-lg font-semibold mb-3 text-gray-800">
-                        Closed vs Lost Jobs ({monthLabel})
-                    </h2>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart
-                            barCategoryGap="20%"
-                            data={(() => {
-                                const map = {};
-                                charts.closedDaily.forEach((i) => {
-                                    map[i.date] = { date: i.date, closed: i.count, lost: 0 };
-                                });
-                                charts.lostDaily.forEach((i) => {
-                                    if (!map[i.date]) map[i.date] = { date: i.date, closed: 0, lost: 0 };
-                                    map[i.date].lost = i.count;
-                                });
-
-                                const year = new Date().getFullYear();
-                                const month = new Date().getMonth();
-                                const days = new Date(year, month + 1, 0).getDate();
-                                const data = [];
-
-                                for (let d = 1; d <= days; d++) {
-                                    const date = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(
-                                        2,
-                                        "0"
-                                    )}`;
-                                    const item = map[date] || { date, closed: 0, lost: 0 };
-                                    const total = item.closed + item.lost;
-                                    const rate = total ? ((item.closed / total) * 100).toFixed(1) : 0;
-                                    data.push({ ...item, rate });
-                                }
-
-                                return data;
-                            })()}
-                        >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                            <XAxis
-                                dataKey="date"
-                                tickFormatter={(v) => new Date(v).getDate()}
-                                tick={{ fontSize: 10 }}
-                                height={40}
-                            />
-                            <YAxis tick={{ fontSize: 11 }} />
-                            <Tooltip
-                                formatter={(value, name, props) => {
-                                    const key = props?.dataKey;
-                                    const label =
-                                        key === "closed" ? "Closed" :
-                                            key === "lost" ? "Lost" :
-                                                key === "rate" ? "Success Rate" :
-                                                    key;
-                                    return key === "rate" ? [`${value}%`, label] : [value, label];
-                                }}
-                                labelFormatter={(label) =>
-                                    new Date(label).toLocaleDateString("en-GB", {
-                                        day: "numeric",
-                                        month: "short",
-                                    })
-                                }
-                                cursor={{ fill: "rgba(0,0,0,0.05)" }}
-                            />
-
-                            <Legend />
-                            <Bar dataKey="closed" name="Closed" fill="#0fb07a" radius={[6, 6, 0, 0]} />
-                            <Bar dataKey="lost" name="Lost" fill="#f87171" radius={[6, 6, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
+                <MonthChart />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <PieBox />
-                    <SixMonthBox />
-                </div>
+                    <SixMonth />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <SimpleBar
-                        title="💵 Income (Last 6 Months)"
-                        color="#64748b"
+                    <SimpleChart
+                        title="Income (Last 6 Months)"
+                        color={CHART_COLORS.income}
                         data={charts.incomeMonthly}
                         dataKey="income"
-                        format="currency"
-                    />
-                    <SimpleBar
-                        title="🗓️ Collected Leads (Last 6 Months)"
-                        color="#0ea5e9"
-                        data={charts.jobMonthly}
-                        dataKey="jobs"
                     />
                 </div>
             </section>

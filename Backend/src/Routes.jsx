@@ -10,6 +10,8 @@ import Pending_Payment from './Pages/Job/Pending_Payment/Pending_Payments';
 import Closed from './Pages/Job/Closed/Closeds';
 import Lead_Lost from './Pages/Job/Lead_Lost/Lead_Losts';
 import Agents from './Pages/Agent/Agents';
+import Tasks from './Pages/Task/Tasks';
+import Task_Report from './Pages/Task/Task_Report';
 import Users from './Pages/User/Users';
 import Settings from './Pages/Setting/Settings';
 
@@ -67,10 +69,12 @@ export default function MainRoutes() {
             <Route path="/lead_lost" element={loggedIn ? <Lead_Lost handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
             <Route path="/employees" element={loggedIn ? <Employees handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
             <Route path="/owners" element={loggedIn ? <Owners handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+            <Route path="/tasks" element={loggedIn ? <Tasks handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
 
 
-            {userType !== "Agent" && (
+            {userType === "Admin" && (
                 <>
+                    <Route path="/task_report" element={loggedIn ? <Task_Report handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
                     <Route path="/agents" element={loggedIn ? <Agents handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
                     <Route path="/users" element={loggedIn ? <Users handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
                     <Route path="/settings" element={loggedIn ? <Settings handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />

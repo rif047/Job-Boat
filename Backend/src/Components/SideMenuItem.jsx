@@ -10,6 +10,7 @@ import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlin
 import SettingsSuggestOutlinedIcon from '@mui/icons-material/SettingsSuggestOutlined';
 import WhatshotOutlinedIcon from '@mui/icons-material/WhatshotOutlined';
 import Person4OutlinedIcon from '@mui/icons-material/Person4Outlined';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 
 export default function SideMenuItem() {
     const userType = localStorage.getItem("userType");
@@ -64,15 +65,23 @@ export default function SideMenuItem() {
                 {Menu_Item('/pending_payment', PaymentsOutlinedIcon, 'Pending Payments')}
                 {Menu_Item('/closed', DoneAllOutlinedIcon, 'Closed Jobs')}
                 {Menu_Item('/lead_lost', EventBusyIcon, 'Lost Leads')}
+
             </div>
 
-            {userType !== "Agent" && (
+            {userType === "Agent" && (
+                <>
+                    {Menu_Item('/tasks', AssignmentIcon, 'Task Submit')}
+                </>
+            )}
+
+            {userType === "Admin" && (
                 <>
                     <p className="text-[11px] uppercase font-semibold text-gray-400 mt-6 mb-2 ml-4 tracking-[0.15em]">
                         Admin
                     </p>
 
                     <div className="space-y-1">
+                        {Menu_Item('/task_report', AssignmentIcon, 'Daily Report')}
                         {Menu_Item('/agents', SupportAgentOutlinedIcon, 'Agents')}
                         {Menu_Item('/users', ManageAccountsOutlinedIcon, 'Users')}
                         {Menu_Item('/settings', SettingsSuggestOutlinedIcon, 'Settings')}
