@@ -13,7 +13,8 @@ const EmployeeSchema = Mongoose.Schema({
     phone: {
         type: Number,
         required: true,
-        unique: true
+        unique: true,
+        index: true
     },
     alt_phone: {
         type: Number
@@ -21,6 +22,9 @@ const EmployeeSchema = Mongoose.Schema({
     address: {
         type: String,
         required: true
+    },
+    email: {
+        type: String,
     },
     position: {
         type: String,

@@ -10,7 +10,7 @@ const modalStyle = {
     left: '50%',
     transform: 'translate(-50%, -50%)',
     width: '90%',
-    maxWidth: 500,
+    maxWidth: 600,
     bgcolor: '#fdfdfd',
     boxShadow: 24,
     p: 3,
@@ -108,6 +108,7 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
                     { name: 'phone', label: 'Phone*' },
                     { name: 'alt_phone', label: 'Alternative Phone' },
                     { name: 'address', label: 'Address*' },
+                    { name: 'email', label: 'Email' },
                     { name: 'city', label: 'City*' },
                     { name: 'preferred_location', label: 'Preferred Location*' },
                     { name: 'position', label: 'Position*' },
@@ -216,7 +217,7 @@ export default function AddEditEmployee({ open, onClose, data, refreshData }) {
                     size="small"
                     margin="normal"
                     multiline
-                    minRows={4}
+                    minRows={8}
                     value={formData.remark || ""}
                     onChange={handleChange}
                     error={!!errors.remark}

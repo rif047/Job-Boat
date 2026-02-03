@@ -8,6 +8,17 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CachedIcon from '@mui/icons-material/Cached';
 import * as XLSX from 'xlsx';
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    Typography,
+    Stack,
+    Alert
+} from "@mui/material";
+
 
 export default function Owners() {
     document.title = 'Owners';
@@ -28,6 +39,10 @@ export default function Owners() {
                 canView: true,
                 canDelete: false,
             };
+
+    const [openImportModal, setOpenImportModal] = useState(false);
+    const [importResult, setImportResult] = useState(null);
+
 
 
     const [modalOpen, setModalOpen] = useState(false);
@@ -89,49 +104,69 @@ export default function Owners() {
 
 
 
-    const handleExcelImport = async (e) => {
+    const handleExcelImport = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        try {
-            setLoading(true);
+        setLoading(true);
 
-            const reader = new FileReader();
+        const reader = new FileReader();
 
-            reader.onload = async (evt) => {
-                const binaryStr = evt.target.result;
-                const workbook = XLSX.read(binaryStr, { type: 'binary' });
-                const sheetName = workbook.SheetNames[0];
-                const sheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json(sheet);
+        reader.onload = async (evt) => {
+            try {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-                if (!jsonData.length) { toast.error("Excel file is empty or invalid."); setLoading(false); return; }
+                if (!jsonData.length) {
+                    toast.error("Excel file is empty.");
+                    return;
+                }
 
-                const formattedData = jsonData.map((row) => ({
-                    agent: row.agent || row.Agent || "Imported",
-                    name: row.name || row.Name,
-                    phone: row.phone || row.Phone,
-                    alt_phone: row.alt_phone || row["Alternative Phone"] || "",
-                    business_name: row.business_name || row["Business Name"] || "",
-                    business_address: row.business_address || row["Business Address"] || "",
-                    remark: row.remark || row.Remark || "",
-                }));
+                const formattedData = jsonData
+                    .map(row => ({
+                        agent: row.agent || row.Agent || "Imported",
+                        name: row.name || row.Name || "",
+                        phone: row.phone || row.Phone || "",
+                        alt_phone: row.alt_phone || row["Alternative Phone"] || "",
+                        business_name: row.business_name || row["Business Name"] || "",
+                        business_address: row.business_address || row["Business Address"] || "",
+                        remark: row.remark || row.Remark || "",
+                    }))
+                    .filter(r =>
+                        r.name &&
+                        r.phone &&
+                        r.business_name &&
+                        r.business_address
+                    );
 
-                await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}/bulk`, formattedData);
+                if (!formattedData.length) {
+                    toast.error("No valid rows found.");
+                    return;
+                }
 
-                toast.success("Data imported successfully!");
+                const res = await axios.post(
+                    `${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}/bulk`,
+                    formattedData
+                );
+
+                setImportResult(res.data);
+                setOpenImportModal(true);
                 fetchData();
-            };
 
-            reader.readAsBinaryString(file);
-        } catch (error) {
-            console.error("Import error:", error);
-            toast.error("Failed to import data. Please check the file format.");
-        } finally {
-            setLoading(false);
-            e.target.value = "";
-        }
+            } catch (error) {
+                toast.error(error.response?.data?.message || "Import failed.");
+            } finally {
+                setLoading(false);
+                e.target.value = "";
+            }
+        };
+
+        reader.readAsArrayBuffer(file);
     };
+
+
 
 
 
@@ -150,6 +185,36 @@ export default function Owners() {
     return (
         <Layout>
             <ToastContainer position="bottom-right" autoClose={2000} />
+            <Dialog open={openImportModal} onClose={() => setOpenImportModal(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>Import Summary</DialogTitle>
+
+                <DialogContent>
+                    <Stack spacing={2}>
+                        <Alert severity="success">
+                            {importResult?.message}
+                        </Alert>
+
+                        <Typography>
+                            📄 Total Rows: <b>{importResult?.total}</b>
+                        </Typography>
+
+                        <Typography color="green">
+                            ✅ Imported: <b>{importResult?.imported}</b>
+                        </Typography>
+
+                        <Typography color="orange">
+                            ⚠️ Skipped (Duplicates): <b>{importResult?.skipped}</b>
+                        </Typography>
+                    </Stack>
+                </DialogContent>
+
+                <DialogActions>
+                    <Button onClick={() => setOpenImportModal(false)} variant="contained">
+                        OK
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
 
             <section className="flex justify-between px-1 md:px-4 py-2 bg-[#4ea863]">
                 <div className='flex justify-center items-center'>

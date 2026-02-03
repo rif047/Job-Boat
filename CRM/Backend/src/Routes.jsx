@@ -4,7 +4,9 @@ import axios from 'axios';
 import Login from './Pages/Auth/Login';
 import Dashboard from './Pages/Dashboard/Dashboard';
 import Employees from './Pages/Employee/Employees';
+import Employees_Submit from './Pages/Employee/Employees_Submit';
 import Owners from './Pages/Owner/Owners';
+import Owners_Submit from './Pages/Owner/Owners_Submit';
 import Jobs from './Pages/Job/Jobs';
 import Pending_Payment from './Pages/Job/Pending_Payment/Pending_Payments';
 import Closed from './Pages/Job/Closed/Closeds';
@@ -70,6 +72,9 @@ export default function MainRoutes() {
             <Route path="/employees" element={loggedIn ? <Employees handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
             <Route path="/owners" element={loggedIn ? <Owners handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
             <Route path="/tasks" element={loggedIn ? <Tasks handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+
+            <Route path="/owners_form" element={<Owners_Submit />} />
+            <Route path="/employees_form" element={<Employees_Submit />} />
 
 
             {userType === "Admin" && (

@@ -13,7 +13,7 @@ const modalStyle = {
     left: "50%",
     transform: "translate(-50%, -50%)",
     width: "90%",
-    maxWidth: 500,
+    maxWidth: 600,
     maxHeight: "90vh",
     bgcolor: "background.paper",
     boxShadow: 24,
@@ -28,6 +28,7 @@ export default function View({ open, onClose, viewData }) {
         { label: "Employee Name", value: viewData?.name },
         { label: "Agent Name", value: viewData?.agent },
         { label: "Phone", value: viewData?.phone },
+        { label: "Email", value: viewData?.email },
         { label: "Alternative Phone", value: viewData?.alt_phone },
         { label: "Address", value: viewData?.address },
     ];

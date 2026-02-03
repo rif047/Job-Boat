@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../../../Layout';
 import Datatable from '../../../Components/Datatable/Datatable';
 import View from './View';
+import Add_Edit from './Add_Edit';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -16,7 +17,7 @@ export default function PendingPayment() {
     const EndPoint = 'jobs';
 
     const userPermissions = {
-        canEdit: false,
+        canEdit: true,
         canView: true,
         canDelete: false,
     };
@@ -163,6 +164,7 @@ export default function PendingPayment() {
 
     const columns = [
         { key: "date", accessorKey: 'date', header: 'Date', maxSize: 80 },
+        { key: "code", accessorKey: 'code', header: 'Code', maxSize: 60 },
         { key: "owner", accessorKey: 'owner', header: 'Owner' },
         { key: "employee", accessorKey: 'employee', header: 'Employee' },
         { key: "position", accessorKey: 'position', header: 'Position' },
@@ -314,8 +316,8 @@ export default function PendingPayment() {
                         size="small"
                         margin="normal"
                         multiline
-                        minRows={4}
-                        value={form.remark}
+                        minRows={8}
+                        // value={form.remark}
                         onChange={e => setForm({ ...form, remark: e.target.value })}
                     />
 

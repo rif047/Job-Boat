@@ -13,12 +13,16 @@ const OwnerSchema = Mongoose.Schema({
     phone: {
         type: Number,
         required: true,
-        unique: true
+        unique: true,
+        index: true
     },
     alt_phone: {
         type: Number
     },
     business_name: {
+        type: String
+    },
+    email: {
         type: String
     },
     business_address: {

@@ -1,10 +1,10 @@
 import { MaterialReactTable } from 'material-react-table';
 import { Button } from '@mui/material';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import DriveFileRenameOutlineOutlinedIcon from '@mui/icons-material/DriveFileRenameOutlineOutlined';
 import './MUI.css';
 
 export default function Datatable({ columns, data, onEdit, onView, onDelete, permissions }) {
@@ -66,7 +66,7 @@ export default function Datatable({ columns, data, onEdit, onView, onDelete, per
 
                     {permissions.canEdit && (
                         <button className="actionBtn cursor-pointer px-2 py-0.5 rounded hover:shadow-2xl bg-orange-50 [&>svg]:w-[15px] hover:bg-orange-300" onClick={() => onEdit(row.original)}  >
-                            <EditIcon />
+                            <DriveFileRenameOutlineOutlinedIcon />
                         </button>
                     )}
 

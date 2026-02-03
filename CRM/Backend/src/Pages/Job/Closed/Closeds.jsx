@@ -97,6 +97,7 @@ export default function Closed() {
 
     const columns = [
         { key: "date", accessorKey: 'date', header: 'Date', maxSize: 80 },
+        { key: "code", accessorKey: 'code', header: 'Code', maxSize: 60 },
         { key: "owner", accessorKey: 'owner', header: 'Owner' },
         { key: "employee", accessorKey: 'employee', header: 'Employee' },
         { key: "position", accessorKey: 'position', header: 'Position' },

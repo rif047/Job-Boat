@@ -192,6 +192,7 @@ export default function Jobs() {
 
     const columns = [
         { key: "createdOn", accessorFn: (row) => row.createdOn ? new Date(row.createdOn).toLocaleDateString() : '', header: 'Date', maxSize: 80 },
+        { key: "code", accessorKey: 'code', header: 'Code', maxSize: 60 },
         { key: "owner", accessorKey: 'owner', header: 'Owner' },
         { key: "position", accessorKey: 'position', header: 'Position' },
         { key: "city", accessorKey: 'city', header: 'City' },
@@ -205,7 +206,7 @@ export default function Jobs() {
                     <button
                         onClick={(e) => { e.stopPropagation(); handleStatusClick(row.original, "PendingPayment"); }}
                         className="text-[#3498db] font-bold flex items-center cursor-pointer">
-                        <span className="text-xs mr-1 text-center ">Add Employee</span>
+                        <span className="text-xs mr-1 text-center ">Add Emp</span>
                         <EventRepeatIcon fontSize="small" />
                     </button>
 
@@ -319,8 +320,8 @@ export default function Jobs() {
                                 size="small"
                                 margin="normal"
                                 multiline
-                                minRows={4}
-                                value={form.remark}
+                                minRows={8}
+                                // value={form.remark}
                                 onChange={e => setForm({ ...form, remark: e.target.value })}
                             />
                         </>
@@ -377,8 +378,8 @@ export default function Jobs() {
                                 size="small"
                                 margin="normal"
                                 multiline
-                                minRows={4}
-                                value={form.remark}
+                                minRows={8}
+                                // value={form.remark}
                                 onChange={e => setForm({ ...form, remark: e.target.value })}
                             />
                         </>

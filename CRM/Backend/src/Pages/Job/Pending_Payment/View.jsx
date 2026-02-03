@@ -2,6 +2,28 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
+import {
+    Business,
+    LocationOn,
+    Person,
+    Link as LinkIcon,
+    Work,
+    Badge,
+    AssignmentInd,
+    PersonPin,
+    Event,
+    Description,
+    MonetizationOn,
+    Apartment,
+    WorkHistory,
+    Gavel,
+    SupportAgent,
+    HourglassEmpty,
+    Note,
+    AttachMoney,
+    Paid,
+    People
+} from '@mui/icons-material';
 
 const modalStyle = {
     position: 'absolute',
@@ -9,99 +31,135 @@ const modalStyle = {
     left: '50%',
     transform: 'translate(-50%, -50%)',
     width: '95%',
-    maxWidth: 600,
+    maxWidth: 800,
     maxHeight: '90vh',
     bgcolor: 'background.paper',
     boxShadow: 24,
-    p: 3,
-    overflowY: 'auto',
     borderRadius: 2,
+    p: 0,
+    overflow: 'hidden',
 };
 
 export default function View({ open, onClose, viewData }) {
-    const capitalizeWords = (str) => str ? str.split(" ").map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ") : "";
+    const sections = [
+        {
+            title: "Job Information",
+            icon: <Work className="text-white text-base" />,
+            items: [
+                { label: "Owner", value: viewData?.owner, icon: <Person className="text-sm" /> },
+                { label: "Employee", value: viewData?.employee, icon: <People className="text-sm" /> },
+                { label: "Business Name", value: viewData?.business_name, icon: <Business className="text-sm" /> },
+                { label: "Position", value: viewData?.position, icon: <AssignmentInd className="text-sm" /> },
+                { label: "City", value: viewData?.city, icon: <LocationOn className="text-sm" /> },
+                { label: "Platform", value: viewData?.source, icon: <PersonPin className="text-sm" /> },
+                { label: "Source", value: viewData?.sourceLink, icon: <LinkIcon className="text-sm" />, isLink: true },
+            ],
+        },
+        {
+            title: "Requirements",
+            icon: <Gavel className="text-white text-base" />,
+            items: [
+                { label: "Wage", value: viewData?.wages ? `£${viewData.wages}` : 'N/A', icon: <MonetizationOn className="text-sm" /> },
+                { label: "Fees", value: viewData?.fee ? `£${viewData.fee}` : 'N/A', icon: <AttachMoney className="text-sm" /> },
+                { label: "Advance Fees", value: viewData?.advance_fee ? `£${viewData.advance_fee}` : 'N/A', icon: <Paid className="text-sm" /> },
+                { label: "Accommodation", value: viewData?.accommodation, icon: <Apartment className="text-sm" /> },
+                { label: "Required Experience", value: viewData?.required_experience, icon: <WorkHistory className="text-sm" /> },
+                { label: "Right to Work", value: viewData?.right_to_work, icon: <Badge className="text-sm" /> },
+            ],
+        },
+        {
+            title: "Progress Details",
+            icon: <HourglassEmpty className="text-white text-base" />,
+            items: [
+                { label: "Agent", value: viewData?.agent, icon: <SupportAgent className="text-sm" /> },
+                { label: "Status", value: viewData?.status, icon: <Badge className="text-sm" /> },
+                {
+                    label: "Updated On",
+                    value: viewData?.date || 'N/A',
+                    icon: <Event className="text-sm" />
+                },
+                {
+                    label: "Created On",
+                    value: viewData?.createdOn ? new Date(viewData.createdOn).toISOString().split("T")[0] : 'N/A',
+                    icon: <Event className="text-sm" />
+                },
+            ],
+        },
+        {
+            title: "Remarks",
+            icon: <Note className="text-white text-base" />,
+            isRemarks: true,
+            items: [
+                { label: "Remarks", value: viewData?.remark, icon: <Description className="text-sm" />, isRemarks: true },
+            ],
+        },
+    ];
+
+    const renderItem = (item) => (
+        <div className="flex items-start gap-2">
+            <div className="p-1 bg-gray-100 rounded mt-0.5">{item.icon}</div>
+            <div className="flex-1 min-w-0">
+                <Typography variant="caption" className="text-gray-500 font-medium block">
+                    {item.label}
+                </Typography>
+                {item.isLink && item.value ? (
+                    <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 hover:underline text-sm truncate block" title={item.value}>
+                        {item.value}
+                    </a>
+                ) : (
+                    <Typography className="text-gray-800 text-sm break-words">{item.value || 'N/A'}</Typography>
+                )}
+            </div>
+        </div>
+    );
 
     return (
         <Modal open={open} onClose={onClose}>
             <Box sx={modalStyle}>
-                <div className="flex justify-between items-center mb-5 border-b border-gray-400 pb-2">
-                    <Typography variant="h6" component="h2" className="!font-bold">
-                        {viewData?.code || 'Job'} Details
-                    </Typography>
-                    <div onClick={onClose} className="cursor-pointer">
-                        <CloseIcon />
-                    </div>
+                <div className="sticky top-0 z-10 bg-gradient-to-r from-[#3e9255] to-[#50a864] text-white p-3 flex justify-between items-center">
+                    <Typography variant="h6 font-bold text-lg" className="font-bold">{viewData?.code || 'Job'} Details</Typography>
+                    <button onClick={onClose} className="p-1 hover:bg-white/20 rounded-full">
+                        <CloseIcon className="text-white text-lg" />
+                    </button>
                 </div>
 
-                {viewData ? (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <Box>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                                Job Information
-                            </Typography>
-                            <Typography><strong>Position:</strong> {viewData.position}</Typography>
-                            <Typography><strong>City:</strong> {viewData.city}</Typography>
-                            <Typography><strong>Owner:</strong> {viewData.owner}</Typography>
-                            <Typography><strong>Employee:</strong> {viewData.employee}</Typography>
-                            <Typography><strong>Business Name:</strong> {viewData.business_name}</Typography>
-                            <Typography><strong>Source:</strong> {viewData.source}</Typography>
-                            <Typography>
-                                <strong>Source Link: </strong>
-                                {viewData?.source_link ? (
-                                    <a
-                                        href={viewData.source_link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{ color: "#1976d2", textDecoration: "underline" }}
-                                    >
-                                        {viewData.source_link}
-                                    </a>
-                                ) : (
-                                    "N/A"
-                                )}
-                            </Typography>
+                <div className="overflow-y-auto max-h-[calc(90vh-64px)] p-3 space-y-3">
+                    {viewData ? (
+                        sections.map((section, i) => (
+                            <div key={i} className={`bg-white border border-gray-200 rounded-lg shadow-sm ${section.isRemarks ? '' : 'hover:shadow-md transition-shadow'}`}>
+                                <div className="flex items-center gap-2 p-1 bg-gradient-to-r from-[#3e9255] to-[#50a864] text-white rounded-t-lg px-2">
+                                    <div className="p-1 bg-white/20 rounded">{section.icon}</div>
+                                    <Typography variant="subtitle2" className="font-semibold">{section.title}</Typography>
+                                </div>
 
+                                <div className="p-4">
+                                    {section.isRemarks ? (
+                                        <Typography className="text-gray-800 text-sm whitespace-pre-line break-words min-h-[100px] p-2">
+                                            {section.items[0]?.value || 'No remarks added'}
+                                        </Typography>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                            {section.items.map(renderItem)}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="flex justify-center items-center py-10">
+                            <div className="text-center">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#3e9255] mx-auto"></div>
+                                <Typography className="mt-2 text-gray-600 text-sm">Loading details...</Typography>
+                            </div>
+                        </div>
+                    )}
 
-                        </Box>
-
-                        <Box>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                                Requirements
-                            </Typography>
-                            <Typography><strong>Wage: </strong>£{viewData.wages}</Typography>
-                            <Typography><strong>Fees: </strong>£{viewData?.fee}</Typography>
-                            <Typography><strong>Advance Fees: </strong>£{viewData?.advance_fee}</Typography>
-                            <Typography><strong>Accommodation: </strong> {viewData.accommodation}</Typography>
-                            <Typography><strong>Required Experience: </strong> {viewData.required_experience}</Typography>
-                            <Typography><strong>Right to Work: </strong> {viewData.right_to_work}</Typography>
-                        </Box>
-
-                        <Box>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                                Progress & Remarks
-                            </Typography>
-                            <Typography><strong>Agent:</strong> {viewData.agent}</Typography>
-                            <Typography><strong>Status:</strong> {viewData.status}</Typography>
-                            <Typography><strong>Status Updated On:</strong> {viewData?.date}</Typography>
-                            <Typography>
-                                <strong>Lead Created On:</strong>{' '}
-                                {viewData.createdOn
-                                    ? new Date(viewData.createdOn).toISOString().split("T")[0]
-                                    : ''
-                                }
-                            </Typography>
-
-
-
-                            <Typography>
-                                <strong>Remarks:</strong>{" "}
-                                <span style={{ whiteSpace: 'pre-line' }}>{viewData?.remark || ''}</span>
-                            </Typography>
-                        </Box>
-                    </Box>
-                ) : (
-                    <Typography>Loading...</Typography>
-                )}
+                    <div className="flex justify-end pt-2">
+                        <button onClick={onClose} className="px-4 py-1 bg-gradient-to-r from-[#3e9255] to-[#50a864] hover:from-[#2e7245] hover:to-[#409854] text-white rounded text-sm font-medium cursor-pointer">
+                            Close
+                        </button>
+                    </div>
+                </div>
             </Box>
         </Modal>
     );

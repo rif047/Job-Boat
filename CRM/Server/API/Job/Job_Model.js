@@ -52,9 +52,8 @@ const JobSchema = Mongoose.Schema({
     source: {
         type: String
     },
-    source_link: {
-        type: String,
-        unique: true
+    sourceLink: {
+        type: String
     },
     status: {
         type: String
@@ -66,7 +65,16 @@ const JobSchema = Mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    updatedOn: {
+        type: Date
+    }
 })
+
+JobSchema.pre('save', function (next) {
+    this.updatedOn = new Date();
+    next();
+});
+
 
 let Job = Mongoose.model('Job', JobSchema)
 
