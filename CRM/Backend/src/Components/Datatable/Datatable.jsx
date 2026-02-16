@@ -10,8 +10,39 @@ import './MUI.css';
 export default function Datatable({ columns, data, onEdit, onView, onDelete, permissions }) {
 
     const excludedFields = ['_id', 'secret_code', 'password', '__v', 'images', 'createdOn'];
+    const MAX_TEXT_LENGTH = 25;
 
     const userType = localStorage.getItem("userType");
+
+    const truncateText = (value) => {
+        if (typeof value !== 'string') return value;
+        if (value.length <= MAX_TEXT_LENGTH) return value;
+        return `${value.slice(0, MAX_TEXT_LENGTH)}...`;
+    };
+
+    const columnsWithTruncation = columns.map((column) => {
+        if (column.Cell) {
+            return {
+                ...column,
+                Cell: (props) => {
+                    const renderedValue = column.Cell(props);
+                    if (typeof renderedValue !== 'string') return renderedValue;
+                    const truncatedValue = truncateText(renderedValue);
+                    return <span title={renderedValue}>{truncatedValue}</span>;
+                },
+            };
+        }
+
+        return {
+            ...column,
+            Cell: ({ cell }) => {
+                const value = cell.getValue();
+                if (typeof value !== 'string') return value;
+                const truncatedValue = truncateText(value);
+                return <span title={value}>{truncatedValue}</span>;
+            },
+        };
+    });
 
 
     const handleExportCsv = () => {
@@ -51,7 +82,7 @@ export default function Datatable({ columns, data, onEdit, onView, onDelete, per
         },
 
 
-        ...columns,
+        ...columnsWithTruncation,
         {
             id: 'actions',
             header: 'Actions',
@@ -106,4 +137,3 @@ export default function Datatable({ columns, data, onEdit, onView, onDelete, per
         />
     );
 }
-

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Layout from '../../../Layout';
 import Datatable from '../../../Components/Datatable/Datatable';
 import View from './View';
@@ -28,6 +28,7 @@ export default function Closed() {
     const [viewData, setViewData] = useState(null);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [selectedLeadType, setSelectedLeadType] = useState("All");
 
 
     const fetchData = async () => {
@@ -100,6 +101,22 @@ export default function Closed() {
         fetchData();
     }, []);
 
+    const leadTypeOptions = useMemo(() => {
+        const uniqueTypes = [...new Set(data.map(item => item.lead_type).filter(Boolean))];
+        return ["All", ...uniqueTypes];
+    }, [data]);
+
+    useEffect(() => {
+        if (!leadTypeOptions.includes(selectedLeadType)) {
+            setSelectedLeadType("All");
+        }
+    }, [leadTypeOptions, selectedLeadType]);
+
+    const filteredData = useMemo(() => {
+        if (selectedLeadType === "All") return data;
+        return data.filter(item => item.lead_type === selectedLeadType);
+    }, [data, selectedLeadType]);
+
 
 
 
@@ -112,7 +129,6 @@ export default function Closed() {
         { key: "employee", accessorKey: 'employee', header: 'Employee' },
         { key: "position", accessorKey: 'position', header: 'Position' },
         { key: "city", accessorKey: 'city', header: 'City' },
-        { key: "wages", accessorFn: row => `£${row.wages}`, header: 'Wage', maxSize: 60 },
         { key: "fee", accessorFn: row => `£${row.fee}`, header: 'Fees', maxSize: 60 },
         { key: "agent", accessorKey: 'agent', header: 'agent', maxSize: 80 },
         ...(userType === "Admin"
@@ -130,7 +146,7 @@ export default function Closed() {
                                 }}
                                 className="text-orange-500 font-bold flex items-center cursor-pointer ml-3"
                             >
-                                <span className="text-xs mr-1 text-center">Back to Hot Lead</span>
+                                <span className="text-xs mr-1 text-center">Hot Lead</span>
                                 <ArrowOutwardIcon fontSize="small" />
                             </button>
                         </div>
@@ -158,8 +174,26 @@ export default function Closed() {
                     }
 
                     <span className="ml-2 text-xs text-gray-300">
-                        Total: {data.length}
+                        Total: {filteredData.length}
                     </span>
+
+                    <div className="ml-3 flex items-center">
+                        <label htmlFor="closedLeadTypeFilter" className="text-xs text-gray-200 mr-2 whitespace-nowrap">
+                            Type
+                        </label>
+                        <select
+                            id="closedLeadTypeFilter"
+                            value={selectedLeadType}
+                            onChange={(e) => setSelectedLeadType(e.target.value)}
+                            className="h-7 rounded-md border border-white/30 bg-white/15 px-2 text-xs text-white outline-none backdrop-blur-sm focus:border-white/70"
+                        >
+                            {leadTypeOptions.map((type) => (
+                                <option key={type} value={type} className="text-gray-800">
+                                    {type}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
                 </div>
             </section>
@@ -174,7 +208,7 @@ export default function Closed() {
                 ) : (
                     <Datatable
                         columns={columns}
-                        data={data}
+                        data={filteredData}
                         onEdit={handleEdit}
                         onView={handleView}
                         onDelete={handleDelete}
