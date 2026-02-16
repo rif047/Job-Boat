@@ -35,7 +35,15 @@ export default function Closed() {
         try {
             const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}`);
 
-            const filteredData = response.data.filter(item => item.status === "Closed");
+            const userType = localStorage.getItem("userType");
+
+            let filteredData = response.data.filter(item => item.status === "Closed");
+
+            if (userType === "Care Agent") {
+                filteredData = filteredData.filter(item => item.lead_type === "Care Lead");
+            } else if (userType === "Agent") {
+                filteredData = filteredData.filter(item => item.lead_type !== "Care Lead");
+            }
 
             setData(filteredData.reverse());
         } catch (error) {
@@ -45,6 +53,7 @@ export default function Closed() {
             setLoading(false);
         }
     };
+
 
 
     const handleDelete = async (row) => {
@@ -98,6 +107,7 @@ export default function Closed() {
     const columns = [
         { key: "date", accessorKey: 'date', header: 'Date', maxSize: 80 },
         { key: "code", accessorKey: 'code', header: 'Code', maxSize: 60 },
+        { key: "lead_type", accessorKey: 'lead_type', header: 'Type', maxSize: 60 },
         { key: "owner", accessorKey: 'owner', header: 'Owner' },
         { key: "employee", accessorKey: 'employee', header: 'Employee' },
         { key: "position", accessorKey: 'position', header: 'Position' },

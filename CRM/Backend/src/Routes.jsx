@@ -12,6 +12,7 @@ import Pending_Payment from './Pages/Job/Pending_Payment/Pending_Payments';
 import Closed from './Pages/Job/Closed/Closeds';
 import Lead_Lost from './Pages/Job/Lead_Lost/Lead_Losts';
 import Agents from './Pages/Agent/Agents';
+import Care_Agents from './Pages/Care_Agent/Care_Agents';
 import Tasks from './Pages/Task/Tasks';
 import Task_Report from './Pages/Task/Task_Report';
 import Users from './Pages/User/Users';
@@ -81,6 +82,7 @@ export default function MainRoutes() {
                 <>
                     <Route path="/task_report" element={loggedIn ? <Task_Report handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
                     <Route path="/agents" element={loggedIn ? <Agents handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+                    <Route path="/Care_agents" element={loggedIn ? <Care_Agents handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
                     <Route path="/users" element={loggedIn ? <Users handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
                     <Route path="/settings" element={loggedIn ? <Settings handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
                 </>

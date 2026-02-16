@@ -28,6 +28,9 @@ const JobSchema = Mongoose.Schema({
     agent: {
         type: String
     },
+    lead_type: {
+        type: String
+    },
     wages: {
         type: Number,
     },

@@ -117,7 +117,7 @@ export default function View({ open, onClose, viewData }) {
         <Modal open={open} onClose={onClose}>
             <Box sx={modalStyle}>
                 <div className="sticky top-0 z-10 bg-gradient-to-r from-[#3e9255] to-[#50a864] text-white p-3 flex justify-between items-center">
-                    <Typography variant="h6 font-bold text-lg" className="font-bold">{viewData?.code || 'Job'} Details</Typography>
+                    <Typography variant="h6 font-bold text-lg" className="font-bold">{viewData?.code || 'Job'} ({viewData?.lead_type || 'Lead Type'})</Typography>
                     <button onClick={onClose} className="p-1 hover:bg-white/20 rounded-full">
                         <CloseIcon className="text-white text-lg" />
                     </button>

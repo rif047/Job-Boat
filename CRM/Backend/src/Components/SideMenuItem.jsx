@@ -83,6 +83,7 @@ export default function SideMenuItem() {
                     <div className="space-y-1">
                         {Menu_Item('/task_report', AssignmentIcon, 'Daily Report')}
                         {Menu_Item('/agents', SupportAgentOutlinedIcon, 'Agents')}
+                        {Menu_Item('/Care_agents', SupportAgentOutlinedIcon, 'Care Agents')}
                         {Menu_Item('/users', ManageAccountsOutlinedIcon, 'Users')}
                         {Menu_Item('/settings', SettingsSuggestOutlinedIcon, 'Settings')}
                     </div>

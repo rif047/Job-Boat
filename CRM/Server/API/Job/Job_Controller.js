@@ -48,7 +48,7 @@ let Jobs = async (req, res) => {
 
 let Create = async (req, res) => {
     try {
-        const { position, city, business_name, owner, wages, accommodation, required_experience, remark, agent, right_to_work, source, sourceLink } = req.body;
+        const { position, city, business_name, owner, wages, accommodation, required_experience, lead_type, remark, agent, right_to_work, source, sourceLink } = req.body;
 
         for (let [key, label] of Object.entries({
             position: 'Job Position',
@@ -86,6 +86,7 @@ let Create = async (req, res) => {
             wages,
             accommodation,
             agent,
+            lead_type,
             source,
             sourceLink,
             remark: formatRemark("", remark, agent),
@@ -124,7 +125,7 @@ let View = async (req, res) => {
 
 let Update = async (req, res) => {
     try {
-        const { position, city, business_name, owner, wages, accommodation, required_experience, agent, remark, right_to_work, source, sourceLink } = req.body;
+        const { position, city, business_name, owner, wages, accommodation, required_experience, agent, lead_type, remark, right_to_work, source, sourceLink } = req.body;
 
         const requiredFields = {
             position: 'Job Position',
@@ -154,6 +155,7 @@ let Update = async (req, res) => {
         updateData.accommodation = accommodation;
         updateData.required_experience = required_experience;
         updateData.agent = agent;
+        updateData.lead_type = lead_type;
         updateData.source = source;
         updateData.sourceLink = sourceLink;
         updateData.right_to_work = right_to_work;

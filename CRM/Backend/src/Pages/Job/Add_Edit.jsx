@@ -32,6 +32,7 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
         owner: "",
         wages: "",
         accommodation: "",
+        lead_type: "",
         required_experience: "",
         right_to_work: "",
         agent: "",
@@ -72,6 +73,7 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
         if (!formData.position) newErrors.position = "Job Position is required.";
         if (!formData.city) newErrors.city = "City is required.";
         if (!formData.owner) newErrors.owner = "Owner is required.";
+        if (!formData.lead_type) newErrors.lead_type = "Lead Type is required.";
         if (formData.wages && isNaN(parseFloat(formData.wages))) { newErrors.wages = "Wage must be a number."; }
 
         setErrors(newErrors);
@@ -132,6 +134,32 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
                         </IconButton>
                     </Box>
 
+
+                    <Autocomplete
+                        fullWidth
+                        size="small"
+                        sx={{ mb: "20px" }}
+                        options={["Indian Lead", "Care Lead", "Other"]}
+                        value={formData.lead_type || null}
+                        onChange={(e, newVal) =>
+                            setFormData((prev) => ({ ...prev, lead_type: newVal || "" }))
+                        }
+                        autoHighlight
+                        selectOnFocus
+                        clearOnBlur
+                        handleHomeEndKeys
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Type Of Lead?"
+                                margin="normal"
+                                error={!!errors.lead_type}
+                                helperText={errors.lead_type}
+                            />
+                        )}
+                    />
+
+
                     <Box display="flex" gap={1} alignItems="center">
                         <Autocomplete
                             fullWidth
@@ -155,7 +183,7 @@ export default function AddEdit({ open, onClose, data, refreshData }) {
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label="Owner*"
+                                    label="Select Owner*"
                                     error={!!errors.owner}
                                     helperText={errors.owner}
                                 />

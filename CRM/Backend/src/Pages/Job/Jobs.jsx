@@ -52,18 +52,36 @@ export default function Jobs() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}`);
+            const response = await axios.get(
+                `${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}`
+            );
 
-            const filteredData = response.data.filter(item => item.status === "Pending");
+            const userType = localStorage.getItem("userType");
+
+            let filteredData = response.data.filter(
+                item => item.status === "Pending"
+            );
+
+            if (userType === "Care Agent") {
+                filteredData = filteredData.filter(
+                    item => item.lead_type === "Care Lead"
+                );
+            }
+            else if (userType === "Agent") {
+                filteredData = filteredData.filter(
+                    item => item.lead_type !== "Care Lead"
+                );
+            }
 
             setData(filteredData.reverse());
         } catch (error) {
-            toast.error('Failed to fetch data. Please try again.');
-            console.error('Error fetching data:', error);
+            toast.error("Failed to fetch data. Please try again.");
+            console.error("Error fetching data:", error);
         } finally {
             setLoading(false);
         }
     };
+
 
 
     const fetchEmployees = async () => {
@@ -193,11 +211,11 @@ export default function Jobs() {
     const columns = [
         { key: "createdOn", accessorFn: (row) => row.createdOn ? new Date(row.createdOn).toLocaleDateString() : '', header: 'Date', maxSize: 80 },
         { key: "code", accessorKey: 'code', header: 'Code', maxSize: 60 },
+        { key: "lead_type", accessorKey: 'lead_type', header: 'Type', maxSize: 60 },
         { key: "owner", accessorKey: 'owner', header: 'Owner' },
         { key: "position", accessorKey: 'position', header: 'Position' },
         { key: "city", accessorKey: 'city', header: 'City' },
         { id: 'wages', accessorFn: row => row.wages ? `£${row.wages}` : '', header: 'Wage', maxSize: 60 },
-        { key: "accommodation", accessorKey: 'accommodation', header: 'Accom', maxSize: 60 },
         { key: "agent", accessorKey: 'agent', header: 'agent', maxSize: 80 },
         {
             key: "actions", header: 'Set Status', maxSize: 50,
