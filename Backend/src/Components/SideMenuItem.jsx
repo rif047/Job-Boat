@@ -11,9 +11,12 @@ import SettingsSuggestOutlinedIcon from '@mui/icons-material/SettingsSuggestOutl
 import WhatshotOutlinedIcon from '@mui/icons-material/WhatshotOutlined';
 import Person4OutlinedIcon from '@mui/icons-material/Person4Outlined';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import { getUserTypesFromStorage, hasAnyUserType, hasUserType } from '../Utils/userAccess';
 
 export default function SideMenuItem() {
-    const userType = localStorage.getItem("userType");
+    const userTypes = getUserTypesFromStorage();
+    const isAdmin = hasUserType(userTypes, 'Admin');
+    const canSubmitTask = !isAdmin && hasAnyUserType(userTypes, ['Agent', 'Indian Lead Agent', 'Care Agent', 'Other']);
 
     const baseItem = "group relative flex items-center gap-3 text-[15px] font-medium px-4 py-1.5 rounded-xl transition-all duration-300 cursor-pointer";
     const activeItem = "bg-gradient-to-r from-[#4ea863] to-[#3b8d52] text-white shadow-[0_4px_15px_rgba(78,168,99,0.2)] scale-[1.02]";
@@ -68,13 +71,13 @@ export default function SideMenuItem() {
 
             </div>
 
-            {userType === "Agent" && (
+            {canSubmitTask && (
                 <>
                     {Menu_Item('/tasks', AssignmentIcon, 'Task Submit')}
                 </>
             )}
 
-            {userType === "Admin" && (
+            {isAdmin && (
                 <>
                     <p className="text-[11px] uppercase font-semibold text-gray-400 mt-6 mb-2 ml-4 tracking-[0.15em]">
                         Admin

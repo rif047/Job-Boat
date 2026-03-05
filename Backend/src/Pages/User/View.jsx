@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
+import { formatUserTypes } from '../../Utils/userAccess';
 
 
 const modalStyle = {
@@ -30,7 +31,7 @@ const capitalizeWords = (str) => {
 
 
 export default function View({ open, onClose, viewData }) {
-    const fieldsToView = ['name', 'phone', 'email', 'username', 'designation', 'secret_code', 'remark'];
+    const fieldsToView = ['name', 'phone', 'email', 'username', 'designation', 'userType', 'secret_code', 'remark'];
 
     return (
         <Modal open={open} onClose={onClose}>
@@ -49,7 +50,7 @@ export default function View({ open, onClose, viewData }) {
                     fieldsToView.map((field) => (
                         viewData[field] && (
                             <Typography key={field}>
-                                <strong>{capitalizeWords(field)}:</strong> {viewData[field]}
+                                <strong>{capitalizeWords(field)}:</strong> {field === 'userType' ? formatUserTypes(viewData[field]) : viewData[field]}
                             </Typography>
                         )
                     ))

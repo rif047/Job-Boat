@@ -11,16 +11,18 @@ import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete } from '@mui/material';
+import { filterLeadsByUserTypes, getUserTypesFromStorage, hasUserType } from '../../Utils/userAccess';
 
 export default function Jobs() {
     document.title = 'Jobs';
 
     const EndPoint = 'jobs';
 
-    const userType = localStorage.getItem("userType");
+    const userTypes = getUserTypesFromStorage();
+    const isAdmin = hasUserType(userTypes, "Admin");
 
     const userPermissions =
-        userType === "Admin"
+        isAdmin
             ? {
                 canEdit: true,
                 canView: true,
@@ -57,22 +59,11 @@ export default function Jobs() {
                 `${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}`
             );
 
-            const userType = localStorage.getItem("userType");
-
             let filteredData = response.data.filter(
                 item => item.status === "Pending"
             );
 
-            if (userType === "Care Agent") {
-                filteredData = filteredData.filter(
-                    item => item.lead_type === "Care Lead"
-                );
-            }
-            else if (userType === "Agent") {
-                filteredData = filteredData.filter(
-                    item => item.lead_type !== "Care Lead"
-                );
-            }
+            filteredData = filterLeadsByUserTypes(filteredData, userTypes);
 
             setData(filteredData.reverse());
         } catch (error) {

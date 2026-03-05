@@ -7,6 +7,7 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CachedIcon from '@mui/icons-material/Cached';
+import { formatUserTypes } from '../../Utils/userAccess';
 
 export default function Users() {
     document.title = 'Users';
@@ -87,7 +88,7 @@ export default function Users() {
         { accessorKey: 'email', header: 'Email' },
         { accessorKey: 'designation', header: 'Designation' },
         { accessorKey: 'username', header: 'UserName' },
-        { accessorKey: 'userType', header: 'User Type' },
+        { accessorFn: (row) => formatUserTypes(row.userType), header: 'User Type' },
     ];
 
     columns.forEach(column => {

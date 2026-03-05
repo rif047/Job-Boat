@@ -3,6 +3,7 @@ import Layout from "../../Layout";
 import CachedIcon from "@mui/icons-material/Cached";
 import { useEffect, useState } from "react";
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, } from "recharts";
+import { filterLeadsByUserTypes, getUserTypesFromStorage } from "../../Utils/userAccess";
 
 
 const CHART_ORDER = ["leads", "closed", "lost"];
@@ -24,6 +25,7 @@ const formatCurrency = (v) =>
 
 export default function Dashboard() {
     document.title = "Dashboard";
+    const userTypes = getUserTypesFromStorage();
 
     const [loading, setLoading] = useState(true);
 
@@ -173,7 +175,7 @@ export default function Dashboard() {
                 axios.get(`${import.meta.env.VITE_SERVER_URL}/api/employees`),
             ]);
 
-            const jobs = j.data || [];
+            const jobs = filterLeadsByUserTypes(j.data || [], userTypes);
             const owners = o.data || [];
             const employees = e.data || [];
             const start = firstDay();

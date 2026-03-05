@@ -10,6 +10,7 @@ import CachedIcon from '@mui/icons-material/Cached';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete } from '@mui/material';
+import { filterLeadsByUserTypes, getUserTypesFromStorage } from '../../../Utils/userAccess';
 
 export default function PendingPayment() {
     document.title = 'Pending Payments';
@@ -21,6 +22,7 @@ export default function PendingPayment() {
         canView: true,
         canDelete: false,
     };
+    const userTypes = getUserTypesFromStorage();
 
 
     const [modalOpen, setModalOpen] = useState(false);
@@ -50,15 +52,9 @@ export default function PendingPayment() {
         try {
             const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}`);
 
-            const userType = localStorage.getItem("userType");
-
             let filteredData = response.data.filter(item => item.status === "PendingPayment");
 
-            if (userType === "Care Agent") {
-                filteredData = filteredData.filter(item => item.lead_type === "Care Lead");
-            } else if (userType === "Agent") {
-                filteredData = filteredData.filter(item => item.lead_type !== "Care Lead");
-            }
+            filteredData = filterLeadsByUserTypes(filteredData, userTypes);
 
             setData(filteredData.reverse());
         } catch (error) {

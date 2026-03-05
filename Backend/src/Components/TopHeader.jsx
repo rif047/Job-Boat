@@ -10,8 +10,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SideMenu from "./SideMenu";
+import { canAccessLead, getUserTypesFromStorage } from "../Utils/userAccess";
 
 export default function TopHeader() {
+    const userTypes = getUserTypesFromStorage();
     const [showMenu, setShowMenu] = useState(false);
     const [showLogout, setShowLogout] = useState(false);
     const [userName, setUserName] = useState("");
@@ -35,6 +37,7 @@ export default function TopHeader() {
     const handleLogout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        localStorage.removeItem("userTypes");
         localStorage.removeItem("userType");
         window.location.href = "/";
     };
@@ -60,10 +63,21 @@ export default function TopHeader() {
                     `${import.meta.env.VITE_SERVER_URL}/search?query=${encodeURIComponent(value)}`
                 );
 
-                const mappedResults = res.data.map((group) => ({
-                    ...group,
-                    total: group.results.length,
-                }));
+                const mappedResults = res.data
+                    .map((group) => {
+                        const filteredResults = (group.results || []).filter((item) => (
+                            Object.prototype.hasOwnProperty.call(item, 'lead_type')
+                                ? canAccessLead(userTypes, item.lead_type)
+                                : true
+                        ));
+
+                        return {
+                            ...group,
+                            results: filteredResults,
+                            total: filteredResults.length,
+                        };
+                    })
+                    .filter((group) => group.total > 0);
 
                 setResults(mappedResults);
                 setShowResults(true);

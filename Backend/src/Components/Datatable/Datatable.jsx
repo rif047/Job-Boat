@@ -6,13 +6,15 @@ import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DriveFileRenameOutlineOutlinedIcon from '@mui/icons-material/DriveFileRenameOutlineOutlined';
 import './MUI.css';
+import { getUserTypesFromStorage, hasUserType } from '../../Utils/userAccess';
 
 export default function Datatable({ columns, data, onEdit, onView, onDelete, permissions }) {
 
     const excludedFields = ['_id', 'secret_code', 'password', '__v', 'images', 'createdOn'];
     const MAX_TEXT_LENGTH = 25;
 
-    const userType = localStorage.getItem("userType");
+    const userTypes = getUserTypesFromStorage();
+    const canExport = !hasUserType(userTypes, 'Agent') || hasUserType(userTypes, 'Admin');
 
     const truncateText = (value) => {
         if (typeof value !== 'string') return value;
@@ -125,7 +127,7 @@ export default function Datatable({ columns, data, onEdit, onView, onDelete, per
             enableColumnActions={false}
             enableCellActions={true}
             renderTopToolbarCustomActions={() =>
-                userType !== "Agent" && (
+                canExport && (
                     <section>
                         <Button className="text-black! capitalize!" onClick={handleExportCsv} startIcon={<DownloadIcon />}>
                             Export

@@ -6,6 +6,7 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CachedIcon from '@mui/icons-material/Cached';
+import { hasUserType, normalizeUserTypes } from '../../Utils/userAccess';
 
 export default function Agents() {
     document.title = 'Agents';
@@ -22,7 +23,7 @@ export default function Agents() {
         setLoading(true);
         try {
             const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}`);
-            const agents = response.data.filter(user => user.userType === 'Agent');
+            const agents = response.data.filter(user => hasUserType(normalizeUserTypes(user.userType), 'Agent'));
             setData(agents.reverse());
         } catch (error) {
             toast.error('Failed to fetch data. Please try again.');

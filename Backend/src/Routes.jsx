@@ -17,15 +17,15 @@ import Tasks from './Pages/Task/Tasks';
 import Task_Report from './Pages/Task/Task_Report';
 import Users from './Pages/User/Users';
 import Settings from './Pages/Setting/Settings';
+import { getUserTypesFromStorage, hasAnyUserType, hasUserType } from './Utils/userAccess';
 
 export default function MainRoutes() {
     const [loggedIn, setLoggedIn] = useState(false);
-    const [userType, setUserType] = useState(null);
+    const [userTypes, setUserTypes] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        const role = localStorage.getItem("userType");
 
         if (token) {
             try {
@@ -33,13 +33,17 @@ export default function MainRoutes() {
                 if (exp * 1000 > Date.now()) {
                     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                     setLoggedIn(true);
-                    setUserType(role);
+                    setUserTypes(getUserTypesFromStorage());
                 } else {
                     localStorage.removeItem("token");
+                    localStorage.removeItem("user");
+                    localStorage.removeItem("userTypes");
                     localStorage.removeItem("userType");
                 }
             } catch (error) {
                 localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                localStorage.removeItem("userTypes");
                 localStorage.removeItem("userType");
             }
         }
@@ -49,8 +53,11 @@ export default function MainRoutes() {
 
     const handleLogout = () => {
         localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("userTypes");
         localStorage.removeItem("userType");
         setLoggedIn(false);
+        setUserTypes([]);
         delete axios.defaults.headers.common['Authorization'];
     };
 
@@ -62,6 +69,9 @@ export default function MainRoutes() {
         );
     }
 
+    const isAdmin = hasUserType(userTypes, "Admin");
+    const canSubmitTask = !isAdmin && hasAnyUserType(userTypes, ['Agent', 'Indian Lead Agent', 'Care Agent', 'Other']);
+
     return (
         <Routes>
             <Route path="/login" element={loggedIn ? <Navigate to="/" replace /> : <Login setLoggedIn={setLoggedIn} />} />
@@ -72,13 +82,13 @@ export default function MainRoutes() {
             <Route path="/lead_lost" element={loggedIn ? <Lead_Lost handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
             <Route path="/employees" element={loggedIn ? <Employees handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
             <Route path="/owners" element={loggedIn ? <Owners handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
-            <Route path="/tasks" element={loggedIn ? <Tasks handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+            <Route path="/tasks" element={loggedIn && canSubmitTask ? <Tasks handleLogout={handleLogout} /> : <Navigate to="/" replace />} />
 
             <Route path="/owners_form" element={<Owners_Submit />} />
             <Route path="/employees_form" element={<Employees_Submit />} />
 
 
-            {userType === "Admin" && (
+            {isAdmin && (
                 <>
                     <Route path="/task_report" element={loggedIn ? <Task_Report handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />
                     <Route path="/agents" element={loggedIn ? <Agents handleLogout={handleLogout} /> : <Navigate to="/login" replace />} />

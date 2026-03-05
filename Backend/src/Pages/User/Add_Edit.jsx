@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, Typography, Modal, TextField, MenuItem, IconButton, InputAdornment } from '@mui/material';
+import { Box, Button, Typography, Modal, TextField, IconButton, InputAdornment, Autocomplete } from '@mui/material';
 import { Visibility, VisibilityOff, Close as CloseIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { USER_TYPE_OPTIONS, formatUserTypes, normalizeUserTypes } from '../../Utils/userAccess';
 
 const modalStyle = {
     position: 'absolute',
@@ -25,6 +26,10 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const selectedUserTypes = normalizeUserTypes(formData.userType);
+    const hasRestrictedTypeSelected = selectedUserTypes.some((type) => (
+        ['Indian Lead Agent', 'Care Agent', 'Other'].includes(type)
+    ));
 
     const togglePasswordVisibility = () => {
         setShowPassword((prev) => !prev);
@@ -34,9 +39,9 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
     useEffect(() => {
         if (data) {
             const { password, ...restData } = data;
-            setFormData(restData);
+            setFormData({ ...restData, userType: normalizeUserTypes(restData.userType) });
         } else {
-            setFormData({});
+            setFormData({ userType: [] });
         }
         setErrors({});
     }, [data]);
@@ -52,7 +57,7 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
         if (!designation) newErrors.designation = 'Designation is required.';
         if (!data && !password) newErrors.password = 'Password is required.';
         if (!secret_code) newErrors.secret_code = 'Secret Word is required.';
-        if (!userType) newErrors.userType = 'User Type is required.';
+        if (!normalizeUserTypes(userType).length) newErrors.userType = 'User Type is required.';
 
 
         if (!/^\d+$/.test(phone || '')) newErrors.phone = 'Phone number must contain numbers.';
@@ -72,6 +77,18 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
         setErrors((prev) => ({ ...prev, [name]: '' }));
     };
 
+    const handleUserTypesChange = (_, value) => {
+        const normalizedUserTypes = normalizeUserTypes(value);
+        const nextUserTypes = normalizedUserTypes.includes('Admin')
+            ? ['Admin']
+            : normalizedUserTypes.includes('Agent')
+                ? ['Agent']
+                : normalizedUserTypes;
+
+        setFormData((prev) => ({ ...prev, userType: nextUserTypes }));
+        setErrors((prev) => ({ ...prev, userType: '' }));
+    };
+
     const handleSubmit = async () => {
         if (!validate() || loading) return;
         setLoading(true);
@@ -81,6 +98,7 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
             const method = data?._id ? 'patch' : 'post';
 
             const submissionData = { ...formData };
+            submissionData.userType = normalizeUserTypes(submissionData.userType);
             if (data && !submissionData.password) {
                 delete submissionData.password;
             }
@@ -120,24 +138,57 @@ export default function AddEditUser({ open, onClose, data, refreshData }) {
                     </IconButton>
                 </Box>
 
-                <TextField
-                    select
-                    label="User Type*"
-                    name="userType"
+                <Autocomplete
+                    multiple
+                    disableCloseOnSelect
+                    options={USER_TYPE_OPTIONS}
+                    value={selectedUserTypes}
+                    getOptionDisabled={(option) => {
+                        if (selectedUserTypes.includes('Admin')) return option !== 'Admin';
+                        if (selectedUserTypes.includes('Agent')) return option !== 'Agent';
+                        if (hasRestrictedTypeSelected && (option === 'Admin' || option === 'Agent')) return true;
+                        return false;
+                    }}
+                    onChange={handleUserTypesChange}
+                    getOptionLabel={(option) => option}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="User Type*"
+                            margin="normal"
+                            size="small"
+                            error={!!errors.userType}
+                            helperText={errors.userType}
+                        />
+                    )}
                     fullWidth
-                    margin="normal"
-                    size="small"
-                    style={{ marginBottom: '15px' }}
-                    value={formData.userType || ''}
-                    onChange={handleChange}
-                    error={!!errors.userType}
-                    helperText={errors.userType}
-                >
-                    <MenuItem value="Admin">Admin</MenuItem>
-                    <MenuItem value="Agent">Agent</MenuItem>
-                    <MenuItem value="Care Agent">Care Agent</MenuItem>
-                    <MenuItem value="Care Agent">Other</MenuItem>
-                </TextField>
+                    sx={{ mb: 1.5 }}
+                />
+
+                {!!selectedUserTypes.length && (
+                    <small className='text-gray-600 ml-2'>Selected: {formatUserTypes(formData.userType)}</small>
+                )}
+
+                <Box sx={{ mt: 1, mb: 1.5, px: 1.5, py: 1, border: '1px solid #e5e7eb', borderRadius: 1, backgroundColor: '#f9fafb' }}>
+                    <Typography variant="caption" sx={{ display: 'block', color: '#4b5563', fontWeight: 600 }}>
+                        User Type Instructions
+                    </Typography>
+                    <Typography variant="caption" sx={{ display: 'block', color: '#6b7280' }}>
+                        Agent: full access (single selection only).
+                    </Typography>
+                    <Typography variant="caption" sx={{ display: 'block', color: '#6b7280' }}>
+                        Indian Lead Agent: Indian Lead + blank lead type.
+                    </Typography>
+                    <Typography variant="caption" sx={{ display: 'block', color: '#6b7280' }}>
+                        Care Agent: Care Lead only.
+                    </Typography>
+                    <Typography variant="caption" sx={{ display: 'block', color: '#6b7280' }}>
+                        Other: Other lead only.
+                    </Typography>
+                    <Typography variant="caption" sx={{ display: 'block', color: '#6b7280' }}>
+                        Multi-select is allowed for non-Admin and non-Agent types.
+                    </Typography>
+                </Box>
 
                 {[
                     { name: 'name', label: 'Name*' },

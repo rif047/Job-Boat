@@ -18,6 +18,7 @@ import {
     Stack,
     Alert
 } from "@mui/material";
+import { getUserTypesFromStorage, hasUserType } from '../../Utils/userAccess';
 
 
 
@@ -26,10 +27,11 @@ export default function Employees() {
 
     const EndPoint = 'employees';
 
-    const userType = localStorage.getItem("userType");
+    const userTypes = getUserTypesFromStorage();
+    const isAdmin = hasUserType(userTypes, "Admin");
 
     const userPermissions =
-        userType === "Admin"
+        isAdmin
             ? {
                 canEdit: true,
                 canView: true,

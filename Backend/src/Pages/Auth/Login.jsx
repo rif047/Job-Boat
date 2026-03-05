@@ -6,6 +6,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { getPrimaryUserType, normalizeUserTypes } from '../../Utils/userAccess';
 
 export default function Login() {
     document.title = 'Login';
@@ -37,10 +38,13 @@ export default function Login() {
             );
 
             const { token, user } = response.data;
+            const userTypes = normalizeUserTypes(user.userTypes || user.userType);
+            const primaryUserType = getPrimaryUserType(userTypes);
 
             localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
-            localStorage.setItem('userType', user.userType);
+            localStorage.setItem('user', JSON.stringify({ ...user, userTypes, userType: primaryUserType }));
+            localStorage.setItem('userTypes', JSON.stringify(userTypes));
+            localStorage.setItem('userType', primaryUserType);
 
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 

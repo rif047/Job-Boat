@@ -7,13 +7,15 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CachedIcon from '@mui/icons-material/Cached';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
+import { filterLeadsByUserTypes, getUserTypesFromStorage, hasUserType } from '../../../Utils/userAccess';
 
 export default function LostLead() {
     document.title = 'Closed Jobs';
 
     const EndPoint = 'jobs';
 
-    const userType = localStorage.getItem("userType");
+    const userTypes = getUserTypesFromStorage();
+    const isAdmin = hasUserType(userTypes, 'Admin');
 
     const userPermissions = {
         canEdit: false,
@@ -36,15 +38,8 @@ export default function LostLead() {
         try {
             const response = await axios.get(`${import.meta.env.VITE_SERVER_URL}/api/${EndPoint}`);
 
-            const userType = localStorage.getItem("userType");
-
             let filteredData = response.data.filter(item => item.status === "LeadLost");
-
-            if (userType === "Care Agent") {
-                filteredData = filteredData.filter(item => item.lead_type === "Care Lead");
-            } else if (userType === "Agent") {
-                filteredData = filteredData.filter(item => item.lead_type !== "Care Lead");
-            }
+            filteredData = filterLeadsByUserTypes(filteredData, userTypes);
 
             setData(filteredData.reverse());
         } catch (error) {
@@ -128,7 +123,7 @@ export default function LostLead() {
         { key: "city", accessorKey: 'city', header: 'City' },
         { key: "accommodation", accessorKey: 'accommodation', header: 'Accom', maxSize: 60 },
         { key: "agent", accessorKey: 'agent', header: 'agent', maxSize: 80 },
-        ...(userType === "Admin"
+        ...(isAdmin
             ? [
                 {
                     key: "actions",
